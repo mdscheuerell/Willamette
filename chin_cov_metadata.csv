@@ -1,19 +1,33 @@
-model,spp,life_stage,covariate,code,long_name,short_name,lag_1,lag_2,begin,end,location,gage,flag,flow_scen
-1,Chinook,prespawn,flow,"""00060""",Min of 7-day mean,min7mean,-1,0,"""11-01""","""03-31""",Willamette at Salem,14191000,1,1
-2,Chinook,prespawn,flow,"""00060""",Median of 7-day mean,med7mean,-1,0,"""11-01""","""03-31""",Willamette at Salem,14191000,1,1
-3,Chinook,prespawn,flow,"""00060""",Max of 7-day mean,max7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-4,Chinook,prespawn,flow,"""00060""",Min of 7-day mean,min7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-5,Chinook,prespawn,flow,"""00060""",Median of 7-day mean,med7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-6,Chinook,prespawn,flow,"""00060""",Range of 7-day mean,rng7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-7,Chinook,rearing,flow,"""00060""",Min of 7-day mean,min7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1
-8,Chinook,rearing,flow,"""00060""",Median of 7-day mean,med7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1
-9,Chinook,rearing,flow,"""00060""",Max of 7-day mean,max7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1
-10,Chinook,rearing,flow,"""00060""",Range of 7-day mean,rng7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1
-11,Chinook,subyearling outmigrants,flow,"""00060""",Min of 7-day mean,min7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-12,Chinook,subyearling outmigrants,flow,"""00060""",Median of 7-day mean,med7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-13,Chinook,subyearling outmigrants,flow,"""00060""",Max of 7-day mean,max7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-14,Chinook,subyearling outmigrants,flow,"""00060""",Range of 7-day mean,rng7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1
-15,Chinook,outmigrants,flow,"""00060""",Min of 7-day mean,min7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1
-16,Chinook,outmigrants,flow,"""00060""",Median of 7-day mean,med7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1
-17,Chinook,outmigrants,flow,"""00060""",Max of 7-day mean,max7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1
-18,Chinook,outmigrants,flow,"""00060""",Range of 7-day mean,rng7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1
+model,spp,life_stage,covariate,code,long_name,short_name,lag_1,lag_2,begin,end,location,gage,flag,flow_scen,group
+1,Chinook,prespawn,flow,"""00060""",Min of 7-day mean,min7mean,-1,0,"""11-01""","""03-31""",Willamette at Salem,14191000,1,1,1
+2,Chinook,prespawn,flow,"""00060""",Median of 7-day mean,med7mean,-1,0,"""11-01""","""03-31""",Willamette at Salem,14191000,1,1,1
+3,Chinook,prespawn,flow,"""00060""",Min of 7-day mean,min7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,2
+4,Chinook,prespawn,flow,"""00060""",Median of 7-day mean,med7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,2
+5,Chinook,prespawn,flow,"""00060""",Max of 7-day mean,max7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,2
+6,Chinook,prespawn,flow,"""00060""",Range of 7-day mean,rng7mean,0,0,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,2
+7,Chinook,prespawn,flow,"""00060""",Min of 7-day mean,min7mean,0,0,"""04-01""","""04-30""",Willamette at Salem,14191000,1,1,2
+8,Chinook,prespawn,flow,"""00060""",Min of 7-day mean,min7mean,0,0,"""05-01""","""05-31""",Willamette at Salem,14191000,1,1,2
+9,Chinook,prespawn,flow,"""00060""",Max of 7-day mean,max7mean,0,0,"""05-01""","""05-31""",Willamette at Salem,14191000,1,1,2
+10,Chinook,prespawn,flow,"""00060""",Min of 7-day mean,min7mean,0,0,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1,2
+11,Chinook,prespawn,flow,"""00060""",Median of 7-day mean,med7mean,0,0,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1,2
+12,Chinook,incubation,flow,"""00060""",Max of 7-day mean,max7mean,0,1,"""11-01""","""03-31""",Willamette at Salem,14191000,1,1,3
+13,Chinook,incubation,flow,"""00060""",Median of 7-day mean,med7mean,0,1,"""11-01""","""03-31""",Willamette at Salem,14191000,1,1,3
+14,Chinook,subyearling outmigrants,flow,"""00060""",Min of 7-day mean,min7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,4
+15,Chinook,subyearling outmigrants,flow,"""00060""",Median of 7-day mean,med7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,4
+16,Chinook,subyearling outmigrants,flow,"""00060""",Max of 7-day mean,max7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,4
+17,Chinook,subyearling outmigrants,flow,"""00060""",Range of 7-day mean,rng7mean,1,1,"""04-01""","""06-30""",Willamette at Salem,14191000,1,1,4
+18,Chinook,subyearling outmigrants,flow,"""00060""",Min of 7-day mean,min7mean,1,1,"""04-01""","""04-30""",Willamette at Salem,14191000,1,1,4
+19,Chinook,subyearling outmigrants,flow,"""00060""",Max of 7-day mean,max7mean,1,1,"""05-01""","""05-31""",Willamette at Salem,14191000,1,1,4
+20,Chinook,subyearling outmigrants,flow,"""00060""",Min of 7-day mean,min7mean,1,1,"""05-01""","""05-31""",Willamette at Salem,14191000,1,1,4
+21,Chinook,rearing,flow,"""00060""",Min of 7-day mean,min7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1,5
+22,Chinook,rearing,flow,"""00060""",Median of 7-day mean,med7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1,5
+23,Chinook,rearing,flow,"""00060""",Max of 7-day mean,max7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1,5
+24,Chinook,rearing,flow,"""00060""",Range of 7-day mean,rng7mean,1,1,"""07-01""","""09-30""",Willamette at Salem,14191000,1,1,5
+25,Chinook,outmigrants,flow,"""00060""",Max of 7-day mean,max7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1,6
+26,Chinook,outmigrants,flow,"""00060""",Median of 7-day mean,med7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1,6
+27,Chinook,outmigrants,flow,"""00060""",Min of 7-day mean,min7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1,6
+28,Chinook,outmigrants,flow,"""00060""",Range of 7-day mean,rng7mean,2,2,"""02-01""","""04-30""",Willamette at Salem,14191000,1,1,6
+29,Chinook,outmigrants,flow,"""00060""",Max of 7-day mean,max7mean,2,2,"""04-01""","""04-30""",Willamette at Salem,14191000,1,1,6
+30,Chinook,outmigrants,flow,"""00060""",Median of 7-day mean,med7mean,2,2,"""04-01""","""04-30""",Willamette at Salem,14191000,1,1,6
+31,Chinook,outmigrants,flow,"""00060""",Min of 7-day mean,min7mean,2,2,"""04-01""","""04-30""",Willamette at Salem,14191000,1,1,6
+32,Chinook,outmigrants,flow,"""00060""",Range of 7-day mean,rng7mean,2,2,"""04-01""","""04-30""",Willamette at Salem,14191000,1,1,6
