@@ -22,11 +22,11 @@ options(width = 120, noaakey = "FgJgzuqMqUeHAyLBIDMNtcTAFcfInuqa")
 [__Mark D. Scheuerell__](https://faculty.washington.edu/scheuerl/)  
 _Fish Ecology Division, Northwest Fisheries Science Center, National Marine Fisheries Service, National Oceanic and Atmospheric Administration, Seattle, WA USA, mark.scheuerell@noaa.gov_
 
-__Tom Friesen__  
-_Oregon Department of Fish and Wildlife, Corvallis, OR USA, tom.friesen@oregonstate.edu_
-
 __J. Tyrell Deweber__  
 _Oregon Cooperative Fish & Wildlife Research Unit, Department of Fisheries & Wildlife, Oregon State University, Corvallis, OR USA, Jefferson.Deweber@oregonstate.edu_
+
+__Tom Friesen__  
+_Oregon Department of Fish and Wildlife, Corvallis, OR USA, tom.friesen@oregonstate.edu_
 
 ***
 
@@ -122,7 +122,7 @@ cov_meta_file <- "chin_cov_metadata.csv"
 
 ## URL for example data files
 ## set to NULL if using a local folder/directory
-ex_url <- "https://raw.githubusercontent.com/mdscheuerell/Willamette/master/"
+ex_url <- "https://raw.githubusercontent.com/mdscheuerell/willamette/master/data/"
 ```
 
 Next we specify some additional information regarding scenarios and forecasting, if desired.
