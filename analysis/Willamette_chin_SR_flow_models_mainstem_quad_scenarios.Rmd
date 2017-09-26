@@ -694,6 +694,132 @@ run_time_in_min <- round(((proc.time()-timer_start)/60)["elapsed"], 1)
 cat(run_time_in_min, file="run_time_in_min.txt")
 ```
 
+
+# Scenarios for flow effects 
+
+Now we can calculate the anticipated effects for each of the flow covariates under all of the future flow scenarios.
+
+```{r future_flow_effects, eval=TRUE, cache=TRUE}
+## indices for covars with scenarios
+dd <- dir(paste0(getwd(),"/",scen_dir))
+fs_idx <- seq(nn) %in% unique(na.omit(as.numeric(unlist(strsplit(dd,"[^0-9]+")))))
+## data frame for results
+mod_scen <- flow_meta$flow_scen[fs_idx]
+n_cov <- length(mod_scen)
+## years with flow covariates for predictions 
+yrs_scen <- c(scen_yr_frst:scen_yr_last)
+n_yrs_scen <- length(scen_yr_frst:scen_yr_last)
+## number of flow scenarios
+n_scen <- length(scen_names)
+## number of spawner levels to consider
+n_sp_scen <- length(scen_sp)
+## fn for predicted R/S 
+RpS <- function(p,spawners,x) {
+  return(round(exp(p[,1]-p[,2]*spawners+p[,3]*x+p[,4]*x^2),2))
+}
+## empty table to hold predictions for each combo of covariate, year, spawner
+tbl_scens_all <- expand.grid(yr=yrs_scen, scen=scen_names, sp=scen_sp)
+tbl_scens_all <- data.frame(tbl_scens_all[,c("yr","sp","scen")], flow=NA)
+tbl_scens_mcmc <- matrix(NA,dim(tbl_scens_all)[1],mcmc_samp)
+## reset counter
+nt <- n_yrs_scen * n_scen * n_sp_scen
+#for(i in mod_scen) {
+for(i in 1:n_cov) {
+## get model S-R params
+  pp <- mod_fits[[i]]$BUGSoutput$sims.array[,,c("mu_Rkr_a","Rkr_b","c1","c2")]
+  dim(pp) <- c(mcmc_samp,mcmc_chains)
+  ## Read in flow values for the selected covariate 
+  flows <- read.csv(paste0(scen_dir,"/AllYears_ScenarioPreds_CovariateNum_",i,".csv"))
+  flw_z <- rep(melt(scale(flows[,-1]))$value,n_sp_scen)
+  tbl_scens_all[,"flow"] <- rep(melt(flows,id="year")$value,n_sp_scen)
+  for(j in 1:nt) {
+    tbl_scens_mcmc[j,] <- RpS(pp,tbl_scens_all[,"sp"],flw_z[j])
+  }
+  ## print predictions across mcmc
+  if(i==1) { apd <- FALSE } else { apd <- TRUE }
+  tbl_scens_tmp <- data.frame(cov=i,tbl_scens_all,tbl_scens_mcmc)
+  write.table(tbl_scens_tmp, append=apd, sep=",", row.names=FALSE, col.names=!apd, 
+              file=paste0("Willamette_Chin_RS_pred_all.csv"))
+  ## summary table with 2.5%, 50% & 97.5% of posterior R/S
+  tbl_scens <- data.frame(tbl_scens_tmp[,c(1:5)],lo=NA,med=NA,hi=NA)
+  tbl_scens[,-c(1:5)] <- round(t(apply(tbl_scens_mcmc,1,quantile,CI_vec)),2)
+  write.table(tbl_scens, append=apd, sep=",", row.names=FALSE, col.names=!apd,
+              file=paste0("Willamette_Chin_RS_pred_smry.csv"))
+}
+```
+
+```{r future_flow_effects_old, eval=FALSE}
+## indices for covars with scenarios
+dd <- dir(paste0(getwd(),"/",scen_dir))
+fs_idx <- seq(nn) %in% unique(na.omit(as.numeric(unlist(strsplit(dd,"[^0-9]+")))))
+## data frame for results
+mod_scen <- flow_meta$flow_scen[fs_idx]
+n_cov <- length(mod_scen)
+## years with flow covariates for predictions 
+yrs_scen <- c(scen_yr_frst:scen_yr_last)
+n_yrs_scen <- length(scen_yr_frst:scen_yr_last)
+## number of flow scenarios
+n_scen <- length(scen_names)
+## number of spawner levels to consider
+n_sp_scen <- length(scen_sp)
+## fn for predicted R/S 
+RpS <- function(p,spawners,x) {
+  return(round(exp(p[,1]-p[,2]*spawners+p[,3]*x+p[,4]*x^2),2))
+}
+## fn for getting predictions across mcmc draws
+fn_mcmc <- function(x) {
+	RpS(pp,x["sp"],x["flw_z"])
+}
+## empty table to hold predictions for each combo of covariate, year, spawner
+tbl_scens_all <- expand.grid(yr=yrs_scen, scen=scen_names, sp=scen_sp, cov=mod_scen)
+tbl_scens_all <- data.frame(tbl_scens_all[,c("cov","yr","sp","scen")],
+                            flow=NA,
+                            matrix(NA,dim(tbl_scens_all)[1],mcmc_samp))
+tbl_scens <- data.frame(tbl_scens_all[,c(1:5)],lo=NA,med=NA,hi=NA)
+#tbl_scens_mcmc <- matrix(NA,dim(tbl_scens_all)[1],mcmc_samp)
+## reset counter
+#cnt <- 1
+nt <- n_yrs_scen * n_scen * n_sp_scen
+#for(i in flow_meta$model[fs_idx]) {
+#for(i in mod_scen) {
+for(i in 1) {
+  ## get model S-R params
+  pp <- mod_fits[[i]]$BUGSoutput$sims.array[,,c("mu_Rkr_a","Rkr_b","c1","c2")]
+  dim(pp) <- c(mcmc_samp,mcmc_chains)
+  ## Read in flow values for the selected covariate 
+  flows <- read.csv(paste0(scen_dir,"/AllYears_ScenarioPreds_CovariateNum_",i,".csv"))
+  flw_z <- rep(melt(scale(flows[,-1]))$value,n_sp_scen)
+  ri <- tbl_scens_all$cov==i
+  tbl_scens_all[ri,"flow"] <- rep(melt(flows,id="year")$value,n_sp_scen)
+  tmp <- data.frame(sp=tbl_scens_all[ri,"sp"],flw_z)
+#  tbl_scens_mcmc[ri,] <- t(apply(tmp,1,fn_mcmc))
+  for(j in 1:nt) {
+    cat(paste0(j,"\n"),file="count_chk.txt", append = TRUE)
+    tbl_scens_all[j+(i-1)*nt,-c(1:5)] <- RpS(pp,tmp[j,"sp"],tmp[j,"flw_z"])
+#    tbl_scens[j+(i-1)*nt,-c(1:5)] <- round(quantile(tbl_scens_all[j+(i-1)*nt,-c(1:5)],
+#                                                         CI_vec),2)
+  }
+  ## predictions across spawners
+#  for(j in 1:n_yrs_scen) {
+#    for(k in scen_sp) {
+#      for(l in scen_names) {
+#        tbl_scens_mcmc[cnt,] <- RpS(pp,k,flw_z[j,l])
+#        cnt <- cnt + 1
+#      }
+#    }
+#  }
+}
+#tbl_scens_all <- data.frame(tbl_scens_all,tbl_scens_mcmc)
+write.csv(tbl_scens_all, row.names = FALSE,
+          file=paste0("Willamette_Chin_RS_pred_all.csv"))
+## summary table with 2.5%, 50% & 97.5% of posterior R/S
+tbl_scens <- data.frame(tbl_scens_all[,c(1:5)],lo=NA,med=NA,hi=NA)
+tbl_scens[,-c(1:5)] <- round(apply(tbl_scens_all,1,quantile,CI_vec),2)
+write.csv(tbl_scens, row.names = FALSE,
+          file=paste0("Willamette_Chin_RS_pred_smry.csv"))
+```
+
+
 # Finding the best model
 
 Let's examine Watanabe's Akaike Information Criterion (WAIC) for each of the models to see which of the covariate scenarios seems to be best supported by the available data.

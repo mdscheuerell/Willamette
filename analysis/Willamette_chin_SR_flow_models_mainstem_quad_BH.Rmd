@@ -132,7 +132,7 @@ Next we specify some additional information regarding scenarios and forecasting,
 n_fore <- 1
 
 ## file where to save JAGS model
-fn_jags <- "Willamette_Chin_SR_flow_models_mainstem_JAGS.txt"
+fn_jags <- "Willamette_Chin_SR_flow_models_mainstem_JAGS_quad_BH.txt"
 
 ## upper threshold for Gelman & Rubin's (1992) potential scale reduction factor (Rhat).
 Rhat_thresh <- 1.1
@@ -457,161 +457,163 @@ cov_temp
 
 Unfortunately, there are missing years of temperature data, even at the Portland gage.
 
-# Specifying model in JAGS
+# Specifying the model in JAGS
 
-Now we can specify the model in JAGS. Note that the code below is not written to be universally generic with respect to the number of covariates, but rather to emphasize how to incorporate the three we used in this specific application. The important thing is the number of covariate parameters in the `PRIORS` and `LIKELIHOOD` sections (i.e., there must be a unique `c_Name` parameter for each of the _MM_ covariates).
-
-```{r SSSR_in_JAGS}
+```{r JAGS_BH_cov_AR}
 cat("
 
 model {
-	
-	##--------
-	## PRIORS
-	##--------
-	## alpha = exp(a) = intrinsic productivity
-	mu_Rkr_a ~ dnorm(0,1e-3)I(-4,4);
-	alpha <- exp(mu_Rkr_a);
-	E_Rkr_a <- mu_Rkr_a + var_Qr/(2 - 2*phi^2);
-
-	## covariate effects
-	c1 ~ dnorm(0,0.001)
-	c2 ~ dnorm(0,0.001)
-
-	## strength of dens depend
-	Rkr_b ~ dunif(0,0.01);
-
-	## AR(1) coef for proc errors
-	phi ~ dunif(-0.999,0.999);
-	
-	## process variance for recruits model
-	sd_Qr ~ dunif(0.001,20);
-	tau_Qr <- pow(sd_Qr,-2);
-	var_Qr <- pow(sd_Qr,2)
-	
-	## innovation in first year
-	innov_1 ~ dnorm(0,tau_Qr*(1-phi*phi));
-	
-	## obs variance for spawners
-	sd_Rs ~ dunif(0.001,3);
-	tau_Rs <- pow(sd_Rs,-2);
-	var_Rs <- pow(sd_Rs,2)
-	
-	## unprojectable early recruits;
-	## hyper mean across all popns
-	Rec_mu ~ dnorm(0,0.001);
-	## hyper SD across all popns
-	Rec_sig ~ dunif(0,100);
-	## precision across all popns
-	Rec_tau <- pow(Rec_sig,-2);
-	## multipliers for unobservable total runs
-	ttl_run_mu ~ dunif(1,5);
-	ttl_run_tau ~ dunif(1,20);
-	
-	## maturity schedule
-	## unif vec for Dirch prior
-	for(i in 1:A) { theta[i] <- 1 }
-	## hyper-mean for maturity
-	p_mu ~ ddirch(theta);
-	## hyper-prec for maturity
-	p_pi ~ dunif(0.001,1e3);
-	for(t in 1:(n_yrs-age_min+n_fore)) { p_vec[t,1:A] ~ ddirch(p_mu*p_pi) }
-	
-	##------------
-	## LIKELIHOOD
-	##------------
-	## 1st brood yr requires different innovation
-	## predicted recruits in BY t
-	ln_Rkr_a[1] <- mu_Rkr_a + c1*covar[1] + c2*covar[1]^2;
-	E_ln_Rec[1] <- ln_Sp[1] + ln_Rkr_a[1] - Rkr_b*Sp[1] + phi*innov_1;
-	tot_ln_Rec[1] ~ dnorm(E_ln_Rec[1],tau_Qr);
-	res_ln_Rec[1] <- tot_ln_Rec[1] - E_ln_Rec[1];
-	## median of total recruits
-	tot_Rec[1] <- exp(tot_ln_Rec[1]);
-
-	## R/S
-	ln_RS[1] <- tot_ln_Rec[1] - ln_Sp[1];
-		
-	## brood-yr recruits by age
-	for(a in 1:A) {
-		Rec[1,a] <- max(1,tot_Rec[1] * p_vec[1,a]);
-		}
-	
-	## brood years 2:(n_yrs-age_min)
-	for(t in 2:(n_yrs-age_min+n_fore)) {
-		## predicted recruits in BY t
-		ln_Rkr_a[t] <- mu_Rkr_a + c1*covar[t] + c2*covar[t]^2;
-		E_ln_Rec[t] <- ln_Sp[t] + ln_Rkr_a[t] - Rkr_b*Sp[t] + phi*res_ln_Rec[t-1];
-		tot_ln_Rec[t] ~ dnorm(E_ln_Rec[t],tau_Qr);
-		res_ln_Rec[t] <- tot_ln_Rec[t] - E_ln_Rec[t];
-		## median of total recruits
-		tot_Rec[t] <- exp(tot_ln_Rec[t]);
-		## R/S
-		ln_RS[t] <- tot_ln_Rec[t] - ln_Sp[t];
-		## brood-yr recruits by age
-		for(a in 1:A) {
-			Rec[t,a] <- max(1,tot_Rec[t] * p_vec[t,a]);
-			}
-		} ## end t loop over year
-
-	## get total cal yr returns for first age_min yrs
-	for(i in 1:(age_min+age_skip)) {
-		ln_tot_Run[i] ~ dnorm(ttl_run_mu*Rec_mu,Rec_tau/ttl_run_tau);
-		tot_Run[i] <- exp(ln_tot_Run[i]);
+  
+  ##--------
+  ## PRIORS
+  ##--------
+  ## alpha = exp(a) = intrinsic productivity
+  alpha ~ dunif(0.1,100);
+  mu_BH_a <- log(alpha);
+  E_BH_a <- mu_BH_a + sigma_r/2;
+  
+  ## strength of dens depend
+  beta ~ dunif(0,0.01);
+  
+  ## covariate effects
+  # for(i in 1:n_cov) { gamma[i] ~ dnorm(0,0.001) }
+  c1 ~ dnorm(0,0.001)
+  c2 ~ dnorm(0,0.001)
+  
+  ## AR(1) coef for proc errors
+  phi ~ dunif(-0.999,0.999);
+  
+  ## innovation in first year
+  innov_1 ~ dnorm(0,tau_r*(1-phi*phi));
+  
+  ## process variance for recruits model
+  sd_r ~ dunif(0.001,20);
+  tau_r <- pow(sd_r,-2);
+  sigma_r <- pow(sd_r,2);
+  
+  ## obs variance for spawners
+  sd_s ~ dunif(0.001,20);
+  tau_s <- pow(sd_s,-2);
+  sigma_s <- pow(sd_s,2);
+  
+  ## unprojectable early recruits;
+  ## hyper mean across all popns
+  Rec_mu ~ dnorm(0,0.001);
+  ## hyper SD across all popns
+  Rec_sig ~ dunif(0,100);
+  ## precision across all popns
+  Rec_tau <- pow(Rec_sig,-2);
+  ## multipliers for unobservable total runs
+  ttl_run_mu ~ dunif(1,5);
+  ttl_run_tau ~ dunif(1,20);
+  
+  ## maturity schedule
+  ## unif vec for Dirch prior
+  for(i in 1:A) { theta[i] <- 1 }
+  ## hyper-mean for maturity
+  pi_eta ~ ddirch(theta);
+  ## hyper-prec for maturity
+  pi_tau ~ dunif(0.001,1e3);
+  for(t in 1:(n_yrs-age_min+n_fore)) { pi_vec[t,1:A] ~ ddirch(pi_eta*pi_tau) }
+  
+  ##------------
+  ## LIKELIHOOD
+  ##------------
+  ## predicted recruits in BY t
+  # covar[1] <- inprod(gamma,scl_cvrs[1,]);
+  e_covar[1] <- c1*covar[1] + c2*covar[1]^2;
+  ln_BH_a[1] <- mu_BH_a + e_covar[1]; 
+  E_ln_Rec[1] <- ln_BH_a[1] + ln_Sp[1] - log(1 + beta*Sp[1]) + phi*innov_1;
+  tot_ln_Rec[1] ~ dnorm(E_ln_Rec[1],tau_r);
+  res_ln_Rec[1] <- tot_ln_Rec[1] - E_ln_Rec[1];
+  ## median of total recruits
+  tot_Rec[1] <- exp(tot_ln_Rec[1]);
+  
+  ## R/S
+  ln_RS[1] <- tot_ln_Rec[1] - ln_Sp[1];
+  
+  ## brood-yr recruits by age
+  for(a in 1:A) {
+    Rec[1,a] <- max(1,tot_Rec[1] * pi_vec[1,a]);
+  }
+  
+  ## brood years 2:(n_yrs-age_min)
+  for(t in 2:(n_yrs-age_min+n_fore)) {
+    ## predicted recruits in BY t
+    # covar[t] <- inprod(gamma, scl_cvrs[t,]);
+    e_covar[t] <- c1*covar[t] + c2*covar[t]^2;
+    ln_BH_a[t] <- mu_BH_a + e_covar[t]; 
+    E_ln_Rec[t] <- ln_BH_a[t] + ln_Sp[t] - log(1 + beta*Sp[t]) + phi*(res_ln_Rec[t-1]);
+    tot_ln_Rec[t] ~ dnorm(E_ln_Rec[t],tau_r);
+    res_ln_Rec[t] <- tot_ln_Rec[t] - E_ln_Rec[t];
+    ## median of total recruits
+    tot_Rec[t] <- exp(tot_ln_Rec[t]);
+    ## R/S
+    ln_RS[t] <- tot_ln_Rec[t] - ln_Sp[t];
+    ## brood-yr recruits by age
+    for(a in 1:A) {
+      Rec[t,a] <- max(1,tot_Rec[t] * pi_vec[t,a]);
     }
-
-	## get predicted calendar year returns by age
-	## matrix Run has dim [(n_yrs-age_min) x A]
-	## step 1: incomplete early broods
-	## first cal yr of this grp is first brood yr + age_min + age_skip
-	for(i in 1:(age_max-age_min-age_skip)) {
-		## projected recruits
-		for(a in 1:(i+age_skip)) {
-			Run[i,a] <- Rec[(age_skip+i)-a+1,a];
-			}
-		## imputed recruits
-		for(a in (i+1+age_skip):A) {
-			lnRec[i,a] ~ dnorm(Rec_mu,Rec_tau);
-			Run[i,a] <- exp(lnRec[i,a]);
-			}
-		## total run size
-		tot_Run[i+age_min+age_skip] <- sum(Run[i,1:A]);
-		## predicted age-prop vec for multinom
-		for(a in 1:A) {
-			age_v[i,a] <- Run[i,a] / tot_Run[i+age_min];
-			}
-		## multinomial for age comp
-		dat_age[i,1:A] ~ dmulti(age_v[i,1:A],dat_age[i,A+1]);
+  } ## end t loop over year
+  
+  ## get total cal yr returns for first age_min yrs
+  for(i in 1:(age_min+age_skip)) {
+    ln_tot_Run[i] ~ dnorm(ttl_run_mu*Rec_mu,Rec_tau/ttl_run_tau);
+    tot_Run[i] <- exp(ln_tot_Run[i]);
+  }
+  
+  ## get predicted calendar year returns by age
+  ## matrix Run has dim [(n_yrs-age_min) x A]
+  ## step 1: incomplete early broods
+  ## first cal yr of this grp is first brood yr + age_min + age_skip
+  for(i in 1:(age_max-age_min-age_skip)) {
+    ## projected recruits
+    for(a in 1:(i+age_skip)) {
+      Run[i,a] <- Rec[(age_skip+i)-a+1,a];
+    }
+    ## imputed recruits
+    for(a in (i+1+age_skip):A) {
+      lnRec[i,a] ~ dnorm(Rec_mu,Rec_tau);
+      Run[i,a] <- exp(lnRec[i,a]);
+    }
+    ## total run size
+    tot_Run[i+age_min+age_skip] <- sum(Run[i,1:A]);
+    # predicted age-prop vec for multinom
+    for(a in 1:A) {
+      age_v[i,a] <- Run[i,a] / tot_Run[i+age_min];
+    }
+    ## multinomial for age comp
+    dat_age[i,1:A] ~ dmulti(age_v[i,1:A],dat_age[i,A+1]);
     lp_age[i] <- logdensity.multi(dat_age[i,1:A],age_v[i,1:A],dat_age[i,A+1]);
-		}
-	
-	## step 2: info from complete broods
-	## first cal yr of this grp is first brood yr + age_max
-	for(i in (A-age_skip):(n_yrs-age_min-age_skip+n_fore)) {
-		for(a in 1:A) {
-			Run[i,a] <- Rec[(age_skip+i)-a+1,a];
-			}
-		## total run size
-		tot_Run[i+age_min+age_skip] <- sum(Run[i,1:A]);
-		## predicted age-prop vec for multinom
-		for(a in 1:A) {
-			age_v[i,a] <- Run[i,a] / tot_Run[i+age_min];
-			}
-		## multinomial for age comp
-		dat_age[i,1:A] ~ dmulti(age_v[i,1:A],dat_age[i,A+1]);
+  }
+  
+  ## step 2: info from complete broods
+  ## first cal yr of this grp is first brood yr + age_max
+  for(i in (A-age_skip):(n_yrs-age_min-age_skip+n_fore)) {
+    for(a in 1:A) {
+      Run[i,a] <- Rec[(age_skip+i)-a+1,a];
+    }
+    ## total run size
+    tot_Run[i+age_min+age_skip] <- sum(Run[i,1:A]);
+    ## predicted age-prop vec for multinom
+    for(a in 1:A) {
+      age_v[i,a] <- Run[i,a] / tot_Run[i+age_min];
+    }
+    ## multinomial for age comp
+    dat_age[i,1:A] ~ dmulti(age_v[i,1:A],dat_age[i,A+1]);
     lp_age[i] <- logdensity.multi(dat_age[i,1:A],age_v[i,1:A],dat_age[i,A+1]);
-		}
-		
-	## get predicted calendar year spawners
-	## first cal yr is first brood yr
-	for(t in 1:(n_yrs+n_fore)) {
-		## obs model for spawners
+  }
+  
+  ## get predicted calendar year spawners
+  ## first cal yr is first brood yr
+  for(t in 1:(n_yrs+n_fore)) {
+    ## obs model for spawners
     Sp[t] <- max(1,tot_Run[t] - dat_harv[t]);
-		ln_Sp[t] <- log(Sp[t]);
-		ln_dat_esc[t] ~ dnorm(ln_Sp[t], tau_Rs);
-    lp_esc[t] <- logdensity.norm(ln_dat_esc[t],ln_Sp[t], tau_Rs)
-		}
-			
+    ln_Sp[t] <- log(Sp[t]);
+    ln_dat_esc[t] ~ dnorm(ln_Sp[t], tau_s);
+    lp_esc[t] <- logdensity.norm(ln_dat_esc[t],ln_Sp[t], tau_s);
+  }
+  
 } ## end model description
 
 ", file=fn_jags)
@@ -635,21 +637,23 @@ timer_start <- proc.time()
 
 ```{r JAGS_IO, message=FALSE, warning=FALSE, cache=TRUE}
 ## 1. data to pass to JAGS
-dat_jags <- c("dat_age","ln_dat_esc","dat_harv","covar",
-              "n_yrs","A","age_min","age_max","age_skip","n_fore") 
+## see below
 
 ## 2. model params/states for JAGS to return
-par_jags <- c("alpha","E_Rkr_a","mu_Rkr_a","Rkr_b","ln_Rkr_a",
-              "c1","c2","lp_age","lp_esc",
-              "Sp","Rec","tot_ln_Rec","ln_RS","p_vec",
-              "var_Qr","var_Rs","res_ln_Rec")
+par_jags <- c("alpha","E_BH_a","ln_BH_a",
+              "beta",
+              "c1", "c2",
+              "lp_age","lp_esc",
+              "Sp","Rec","tot_ln_Rec","ln_RS",
+              "pi_vec",
+              "sigma_r","sigma_s","res_ln_Rec")
 
 ## 3. MCMC control params
 ## MCMC parameters
 mcmc_chains <- 4
-mcmc_length <- 7e5
+mcmc_length <- 4.5e5
 mcmc_burn <- 2e5
-mcmc_thin <- 400
+mcmc_thin <- 200
 ## total number of MCMC samples
 mcmc_samp <- (mcmc_length-mcmc_burn)*mcmc_chains/mcmc_thin
 
@@ -784,9 +788,9 @@ The convergence statistics indicate that some of the elements in $p$ for the est
 Here is a table of summary statistics for some of the model parameters.
 
 ```{r tbl_summary_stats}
-tbl_smry <- mod_fit$BUGSoutput$summary[c("E_Rkr_a","Rkr_b","c1","c2",
-                                         "var_Qr","var_Rs"),
+tbl_smry <- mod_fit$BUGSoutput$summary[c("alpha","E_BH_a","beta","c1","c2"),
                                        c("mean","sd","2.5%","50%","97.5%")]
+#rownames(tbl_smry)[seq(n_cov)+2] <- colnames(dat_cvrs)                                 
 print(tbl_smry,digits=3,quote=FALSE,justify="right")
 ```
 
@@ -796,6 +800,7 @@ Here is the relationship between spawner and subsequent recruits (a), assuming m
 
 ```{r plot_S_R, fig.width=8, fig.height=5, fig.pos="placeHere", eval=TRUE}
 layout(matrix(c(1,1,2,3),2,2),c(3,2),c(1,1))
+CI_vec <- c(0.025,0.5,0.975)
 offSet <- 0.06
 
 ## posterior of spawners
@@ -804,12 +809,14 @@ sDat <- sDat[,1:(n_yrs-age_min+n_fore)]
 ## posterior of recruits
 rDat <- exp(apply(mod_fit$BUGSoutput$sims.list$tot_ln_Rec,2,quantile,CI_vec))
 ## median values for a & b
-aa <- apply(mod_fit$BUGSoutput$sims.list$ln_Rkr_a,2,median)
-bb <- apply(mod_fit$BUGSoutput$sims.list$Rkr_b,2,median)
-
+aa <- apply(mod_fit$BUGSoutput$sims.list$ln_BH_a,2,median)
+# bb <- apply(mod_fit$BUGSoutput$sims.list$beta,2,median)
+# aa <- median(mod_fit$BUGSoutput$sims.list$alpha)
+bb <- median(mod_fit$BUGSoutput$sims.list$beta)
 ## empty plot space for spawner-recruit relationships
-dd <- 5000
-yM <- Re2prec(max(rDat[2,]),"ceiling",dd*2)
+dd <- 3000
+yM <- Re2prec(max(rDat),"ceiling",dd)
+#yM <- 30000
 xM <- Re2prec(max(sDat),"ceiling",dd)
 par(mai=c(0.8,0.8,0.1,0.1), omi=c(0,0,0,0))
 plot(sDat[2,],rDat[2,], xlim=c(0,xM), ylim=c(0,yM), pch=16, col="blue3", type="n",
@@ -817,7 +824,9 @@ plot(sDat[2,],rDat[2,], xlim=c(0,xM), ylim=c(0,yM), pch=16, col="blue3", type="n
 	 xaxt="n", yaxt="n")
 axis(1, at=seq(0,xM,dd*2), labels=seq(0,xM,dd*2)/1000)
 axis(2, at=seq(0,yM,dd*2), labels=seq(0,yM,dd*2)/1000)
-for(i in 1:length(aa)) { lines(seq(xM)*exp(aa[i]-bb*seq(xM)), col="darkgray") }
+for(i in 1:length(aa)) { lines(exp(aa[i])*seq(0,xM)/(1+bb*seq(0,xM)), col="darkgray") }
+#for(i in 1:length(aa)) { lines(aa[i]*seq(0,xM)/(1+bb*seq(0,xM)), col="darkgray") }
+# lines(aa*seq(0,xM)/(1+bb*seq(0,xM)), col="darkgray")
 ## add S-R estimates and medians
 abline(a=0,b=1,lty="dashed")
 nCB <- n_yrs-age_max
@@ -830,38 +839,49 @@ segments(sDat[2,(nCB+1):nTB],rDat[1,(nCB+1):nTB],sDat[2,(nCB+1):nTB],rDat[3,(nCB
 segments(sDat[1,(nCB+1):nTB],rDat[2,(nCB+1):nTB],sDat[3,(nCB+1):nTB],rDat[2,(nCB+1):nTB], col=clr)
 points(sDat[2,(nCB+1):nTB],rDat[2,(nCB+1):nTB],
        xlim=c(0,xM), ylim=c(0,yM), pch=16, col=clr)
+text(x=par()$usr[1]+par()$pin[2]/par()$pin[1]*offSet*diff(par()$usr[1:2]),
+	 y=par()$usr[4]-offSet*diff(par()$usr[3:4]),"(a)")
 
-## posterior for exp(a)
+## posterior for alpha
 clr <- rgb(0, 0, 255, alpha = 50, maxColorValue = 255)
+a_thresh <- 99
 par(mai=c(0.8,0.4,0.3,0.1))
-## Ricker a
+## B-H alpha
 R_alpha_est <- mod_fit$BUGSoutput$sims.list$alpha
 alphaCI <- quantile(R_alpha_est,c(0.025,0.5,0.975))
-R_alpha_est[R_alpha_est>10] <- 10
-hist(R_alpha_est,freq=FALSE,xlab="",main="",breaks=seq(0,10,0.2),
+R_alpha_est[R_alpha_est>a_thresh] <- a_thresh
+hist(R_alpha_est,freq=FALSE,xlab="",main="",breaks=seq(0,a_thresh+1,2),
      col=clr, border="blue3", ylab="", cex.lab=1.2, yaxt="n")
 aHt <- (par()$usr[4]-par()$usr[3])/12
 arrows(alphaCI,par()$usr[3],alphaCI,par()$usr[3]-aHt,
        code=1,length=0.05,xpd=NA,col="blue3",lwd=1.5)
-mtext(expression(paste("Instrinsic productivity ",(e^italic(a)))), 1, line=3, cex=1)
+mtext(expression(Instrinsic~productivity~(alpha)), 1, line=3, cex=1)
+text(x=par()$usr[1]+par()$pin[2]/par()$pin[1]*offSet*diff(par()$usr[1:2]),
+	 y=par()$usr[4]-offSet*diff(par()$usr[3:4]),"(b)")
 
-## posterior for a/b
+## posterior for K
 par(mai=c(0.8,0.4,0.3,0.1))
-aa <- matrix(mod_fit$BUGSoutput$sims.array[,,"E_Rkr_a"],ncol=1)
-bb <- matrix(mod_fit$BUGSoutput$sims.array[,,"Rkr_b"],ncol=1)
-R_b_est <- aa/bb
+aa <- matrix(mod_fit$BUGSoutput$sims.array[,,"alpha"],ncol=1)
+bb <- matrix(mod_fit$BUGSoutput$sims.array[,,"beta"],ncol=1)
+R_b_est <- (aa-1)/bb
 R_b_est <- R_b_est[R_b_est > 0]
 R_b_CI <- quantile(R_b_est,c(0.025,0.5,0.975))
-R_b_est[R_b_est>6e4] <- 6e4
-brks <- seq(Re2prec(min(R_b_est),"floor",2000),6e4,length.out=length(seq(0,10,0.2)))
+R_b_est[R_b_est>12e3] <- 12e3
+brks <- seq(Re2prec(min(R_b_est),"floor",1000),
+            Re2prec(max(R_b_est),"ceiling",1000),
+            length.out=length(seq(0,a_thresh,2)))
 hist(R_b_est, freq=FALSE, breaks=brks, col=clr, border="blue3",
 	 xlab="", xaxt="n", yaxt="n",
 	 main="", ylab="", cex.lab=1.2)
-axis(1, at=seq(Re2prec(min(R_b_est),"floor",2000),6e4,20000))
+axis(1, at=seq(Re2prec(min(R_b_est),"floor",1000),
+               Re2prec(max(R_b_est),"ceiling",1000),
+               2000))
 aHt <- (par()$usr[4]-par()$usr[3])/12
 arrows(R_b_CI,par()$usr[3],R_b_CI,par()$usr[3]-aHt,
        code=1,length=0.05,xpd=NA,col="blue3",lwd=1.5)
-mtext(expression(paste("Carrying capacity (",italic(a)/italic(b),")")), 1, line=3, cex=1)
+mtext(expression(Carrying~capacity~(italic(K))), 1, line=3, cex=1)
+text(x=par()$usr[1]+par()$pin[2]/par()$pin[1]*offSet*diff(par()$usr[1:2]),
+	 y=par()$usr[4]-offSet*diff(par()$usr[3:4]),"(c)")
 ```
 
 ## Covariate effects
