@@ -732,7 +732,7 @@ tbl_WAIC <- data.frame(life_stage=flow_meta$life_stage,
 write.csv(tbl_WAIC,  row.names = FALSE,
           file = "Willamette_Chin_SR_flow_models_mainstem_model_selection_all.csv")
 best_idx <- which(tbl_WAIC$d_WAIC==0)
-tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag","WAIC"))]
+tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag"))]
 ```
 
 The model with the most support from the data is number `r best_idx`, which estimates a flow effect during the `r tbl_WAIC$life_stage[best_idx]` stage as the "`r tbl_WAIC$variable[best_idx]`" beginning on `r tbl_WAIC$begin[best_idx]` and ending on `r tbl_WAIC$end[best_idx]`.

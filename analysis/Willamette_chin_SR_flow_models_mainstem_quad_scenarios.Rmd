@@ -647,9 +647,9 @@ par_jags <- c("alpha","E_Rkr_a","mu_Rkr_a","Rkr_b","ln_Rkr_a",
 ## 3. MCMC control params
 ## MCMC parameters
 mcmc_chains <- 4
-mcmc_length <- 7e5
+mcmc_length <- 4.5e5
 mcmc_burn <- 2e5
-mcmc_thin <- 400
+mcmc_thin <- 200
 ## total number of MCMC samples
 mcmc_samp <- (mcmc_length-mcmc_burn)*mcmc_chains/mcmc_thin
 
@@ -854,7 +854,7 @@ tbl_WAIC <- data.frame(life_stage=flow_meta$life_stage,
 write.csv(tbl_WAIC,  row.names = FALSE,
           file = "Willamette_Chin_SR_flow_models_mainstem_model_selection_all.csv")
 best_idx <- which(tbl_WAIC$d_WAIC==0)
-tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag","WAIC"))]
+tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag"))]
 ```
 
 The model with the most support from the data is number `r best_idx`, which estimates a flow effect during the `r tbl_WAIC$life_stage[best_idx]` stage as the "`r tbl_WAIC$variable[best_idx]`" beginning on `r tbl_WAIC$begin[best_idx]` and ending on `r tbl_WAIC$end[best_idx]`.
