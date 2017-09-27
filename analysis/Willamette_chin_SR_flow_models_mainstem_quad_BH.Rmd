@@ -1012,7 +1012,7 @@ Here are time series of the estimated proportions of each age class by brood yea
 ```{r plot_age_comp, fig.width=6, fig.height=4, fig.pos="placeHere"}
 par(mai=c(0.8,0.8,0.1,0.1), omi=c(0,0.1,0.2,0.2))
 clr <- rgb(0, 0, 255, alpha = 40, maxColorValue = 255)
-age_est <- t(apply(apply(mod_fit$BUGSoutput$sims.list$p_vec,c(3,2),mean),2,cumsum))
+age_est <- t(apply(apply(mod_fit$BUGSoutput$sims.list$pi_vec,c(3,2),mean),2,cumsum))
 nRec <- n_yrs-age_min
 plot(t_idx_a, rep(1,nRec+n_fore), ylab="Proportion", xlab="Brood year", ylim=c(0,1), las=1,
      xaxs="i", yaxs="i", type="n", lty="solid", col="blue3", cex.lab=1.2)
@@ -1059,7 +1059,7 @@ mtext("Year", 1, line=2.5, outer=TRUE, cex=1.2)
 Here is the time series of the time-varying productivity ($a_t$), which includes the cumulative effects of the `r n_mods` covariates.
 
 ```{r plot_prod_over_time, fig.width=6, fig.height=4, fig.pos="placeHere"}
-pDat <- apply(mod_fit$BUGSoutput$sims.list$ln_Rkr_a,2,quantile,CI_vec)
+pDat <- apply(mod_fit$BUGSoutput$sims.list$ln_BH_a,2,quantile,CI_vec)
 ypMin <- min(pDat)
 ypMax <- max(pDat)
 par(mai=c(0.8,0.8,0.1,0.1), omi=c(0,0.2,0.1,0.2))
@@ -1094,7 +1094,7 @@ Here are a number of management reference points.
 ref_names <- c("MSY","Smsy","Umsy","Umax")
 # proportions of MSY to consider
 yld_prop <- c(0.75,0.85,0.95)
-aa <- matrix(mod_fit$BUGSoutput$sims.array[,,"E_Rkr_a"],ncol=1)
+aa <- matrix(mod_fit$BUGSoutput$sims.array[,,"E_BH_a"],ncol=1)
 alpha <- matrix(mod_fit$BUGSoutput$sims.array[,,"alpha"],ncol=1)
 mcmc <- length(aa)
 # empty matrix for ref pts
