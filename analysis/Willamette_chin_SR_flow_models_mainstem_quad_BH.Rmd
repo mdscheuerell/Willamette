@@ -730,7 +730,7 @@ tbl_WAIC <- data.frame(life_stage=flow_meta$life_stage,
                        round(cc_smry_1,2),
                        round(cc_smry_2,2))
 write.csv(tbl_WAIC,  row.names = FALSE,
-          file = "Willamette_Chin_SR_flow_models_mainstem_model_selection_all.csv")
+          file = "Willamette_Chin_BH_flow_models_mainstem_model_selection_all.csv")
 best_idx <- which(tbl_WAIC$d_WAIC==0)
 tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag"))]
 ```
@@ -866,7 +866,7 @@ bb <- matrix(mod_fit$BUGSoutput$sims.array[,,"beta"],ncol=1)
 R_b_est <- (aa-1)/bb
 R_b_est <- R_b_est[R_b_est > 0]
 R_b_CI <- quantile(R_b_est,c(0.025,0.5,0.975))
-R_b_est[R_b_est>12e3] <- 12e3
+R_b_est[R_b_est>15e3] <- 15e3
 brks <- seq(Re2prec(min(R_b_est),"floor",1000),
             Re2prec(max(R_b_est),"ceiling",1000),
             length.out=length(seq(0,a_thresh,2)))

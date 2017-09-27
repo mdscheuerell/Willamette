@@ -852,7 +852,7 @@ tbl_WAIC <- data.frame(life_stage=flow_meta$life_stage,
                        round(cc_smry_1,2),
                        round(cc_smry_2,2))
 write.csv(tbl_WAIC,  row.names = FALSE,
-          file = "Willamette_Chin_SR_flow_models_mainstem_model_selection_all.csv")
+          file = "Willamette_Chin_Ricker_flow_models_mainstem_model_selection_all.csv")
 best_idx <- which(tbl_WAIC$d_WAIC==0)
 tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag"))]
 ```
