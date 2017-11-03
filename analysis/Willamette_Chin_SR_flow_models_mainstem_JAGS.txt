@@ -12,7 +12,6 @@ model {
 
 	## covariate effects
 	c1 ~ dnorm(0,0.001)
-	c2 ~ dnorm(0,0.001)
 
 	## strength of dens depend
 	Rkr_b ~ dunif(0,0.01);
@@ -58,7 +57,7 @@ model {
 	##------------
 	## 1st brood yr requires different innovation
 	## predicted recruits in BY t
-	ln_Rkr_a[1] <- mu_Rkr_a + c1*covar[1] + c2*covar[1]^2;
+	ln_Rkr_a[1] <- mu_Rkr_a + c1*covar[1];
 	E_ln_Rec[1] <- ln_Sp[1] + ln_Rkr_a[1] - Rkr_b*Sp[1] + phi*innov_1;
 	tot_ln_Rec[1] ~ dnorm(E_ln_Rec[1],tau_Qr);
 	res_ln_Rec[1] <- tot_ln_Rec[1] - E_ln_Rec[1];
@@ -76,7 +75,7 @@ model {
 	## brood years 2:(n_yrs-age_min)
 	for(t in 2:(n_yrs-age_min+n_fore)) {
 		## predicted recruits in BY t
-		ln_Rkr_a[t] <- mu_Rkr_a + c1*covar[t] + c2*covar[t]^2;
+		ln_Rkr_a[t] <- mu_Rkr_a + c1*covar[t];
 		E_ln_Rec[t] <- ln_Sp[t] + ln_Rkr_a[t] - Rkr_b*Sp[t] + phi*res_ln_Rec[t-1];
 		tot_ln_Rec[t] ~ dnorm(E_ln_Rec[t],tau_Qr);
 		res_ln_Rec[t] <- tot_ln_Rec[t] - E_ln_Rec[t];
