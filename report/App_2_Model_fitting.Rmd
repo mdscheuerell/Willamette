@@ -173,6 +173,17 @@ dat_harv <- dat_harv[dat_harv$year>=yr_frst & dat_harv$year<=yr_last,-1]
 
 # Loading the covariates
 
+Load the metadata file containing all of the specifications for the covariates to be used.
+
+```{r get_cov_meta}
+cov_meta <- read.csv(file.path(datadir, cov_meta_file), stringsAsFactors = FALSE)
+cov_meta$code <- gsub("\"","",cov_meta$code)
+cov_meta$begin <- gsub("\"","",cov_meta$begin)
+cov_meta$end <- gsub("\"","",cov_meta$end)
+```
+
+Load the saved covariates.
+
 ```{r get_flow_cov}
 cov_flow <- read.csv(file.path(datadir, fn_cov))
 n_mods <- dim(cov_flow)[2] - 1
@@ -288,7 +299,7 @@ model {
 	for(i in 1:(age_max-age_min)) {
 		## projected recruits
 		for(a in 1:(i)) {
-			Run[i,a] <- Rec[(age_skip+i)-a+1,a];
+			Run[i,a] <- Rec[i-a+1,a];
 			}
 		## imputed recruits
 		for(a in (i+1):A) {
@@ -310,7 +321,7 @@ model {
 	## first cal yr of this grp is first brood yr + age_max
 	for(i in A:(n_yrs-age_min)) {
 		for(a in 1:A) {
-			Run[i,a] <- Rec[(age_skip+i)-a+1,a];
+			Run[i,a] <- Rec[i-a+1,a];
 			}
 		## total run size
 		tot_Run[i+age_min] <- sum(Run[i,1:A]);
@@ -344,17 +355,19 @@ model {
 The last thing we need to do before fitting the model in JAGS is to specify:
 
 1. the data and indices that go into the model;
-2. the model parameters and states that we want JAGS to return;
-3. the MCMC control parameters.
 
-Please note that the following code takes ~3 min to run on a quad-core machine with 3.5 GHz Intel processors.
+2. the model parameters and states that we want JAGS to return;
+
+3. the MCMC control parameters;
+
+4. a function to specify initial conditions. 
 
 ```{r start_timer, include=FALSE}
 ## start timer
 timer_start <- proc.time() 
 ```
 
-```{r JAGS_IO, message=FALSE, warning=FALSE, cache=TRUE}
+```{r JAGS_controls}
 ## 1. data to pass to JAGS
 dat_jags <- c("dat_age","ln_dat_esc","dat_harv","covar",
               "n_yrs","A","age_min","age_max") 
@@ -368,13 +381,13 @@ par_jags <- c("alpha","E_Rkr_a","mu_Rkr_a","Rkr_b","ln_Rkr_a",
 ## 3. MCMC control params
 ## MCMC parameters
 mcmc_chains <- 4
-mcmc_length <- 7e5
-mcmc_burn <- 2e5
-mcmc_thin <- 400
+mcmc_length <- 7e3 # 7e5
+mcmc_burn <- 2e3 # 2e5
+mcmc_thin <- 4 # 400
 ## total number of MCMC samples
 mcmc_samp <- (mcmc_length-mcmc_burn)*mcmc_chains/mcmc_thin
 
-## function to create JAGS inits
+## 4. function to create JAGS inits
 init_vals <- function() {
 	list(mu_Rkr_a=1, c1=rnorm(1,0,0.1),
 	     Rkr_b=1/exp(mean(ln_dat_esc, na.rm=TRUE)),
@@ -387,32 +400,46 @@ init_vals <- function() {
 	     innov_1=0,
 	     phi=0.5)
 	}
+```
 
-## fit the model in JAGS & store results
-mod_fits <- vector("list", n_mods)
+Now we can fit the models. Please note that the following code takes ~3 min to run on a quad-core machine with 3.5 GHz Intel processors.
+
+```{r JAGS_IO, message=FALSE, warning=FALSE, cache=TRUE}
+## list of model info for JAGS
+mod_jags <- list(data=dat_jags,
+                 inits = init_vals,
+                 parameters.to.save = par_jags,
+                 model.file = file.path(jagsdir, fn_jags),
+                 n.chains = as.integer(mcmc_chains),
+                 n.iter = as.integer(mcmc_length),
+                 n.burnin = as.integer(mcmc_burn),
+                 n.thin = as.integer(mcmc_thin),
+                 DIC = TRUE)
+## empty table for model selection
+WAIC <- vector("numeric", n_mods)
+cc_smry_1 <- matrix(NA, n_mods, 3)
+colnames(cc_smry_1) <- paste0("linr_", c("lo","med","up"))
+## fit models & store results
 for(i in 1:n_mods) {
   covar <- (cov_flow[,i+1] - mean(cov_flow[,i+1])) / sd(cov_flow[,i+1])
-  dat_jags <- c("dat_age","ln_dat_esc","dat_harv","covar",
-                "n_yrs","A","age_min","age_max","age_skip","n_fore") 
-  ## list of model info for JAGS
-  mod_jags <- list(data = dat_jags,
-                   inits = init_vals,
-                   parameters.to.save = par_jags,
-                   model.file = fn_jags,
-                   n.chains = as.integer(mcmc_chains),
-                   n.iter = as.integer(mcmc_length),
-                   n.burnin = as.integer(mcmc_burn),
-                   n.thin = as.integer(mcmc_thin),
-                   DIC = TRUE)
-  mod_fits[[i]] <- do.call(jags.parallel, mod_jags)
+  ## fit the model
+  mod_fit <- do.call(jags.parallel, mod_jags)
+  saveRDS(mod_fit, file = file.path(jagsdir, paste0("jags_mod_fit_cov_", i, ".rds")))
+  ## compute WAIC
+  ldens <- cbind(matrix(0,mcmc_samp,(age_min)),
+                 mod_fit$BUGSoutput$sims.list$lp_age)
+  ldens <- ldens + mod_fit$BUGSoutput$sims.list$lp_esc
+  WAIC[i] <- waic(ldens)$waic
+  cc_smry_1[i,] <- mod_fit$BUGSoutput$summary["c1", c("2.5%","50%","97.5%")]
 }
 # save(list=ls(), file="Willamette_Chin_SR_flow_models_mainstem.RData")
 ```
 
+
 ```{r stop_timer, include=FALSE}
 ## stop timer
 run_time_in_min <- round(((proc.time()-timer_start)/60)["elapsed"], 1)
-cat(run_time_in_min, file="run_time_in_min.txt")
+cat(run_time_in_min, file = "run_time_in_min.txt")
 ```
 
 # Finding the best model
@@ -420,17 +447,6 @@ cat(run_time_in_min, file="run_time_in_min.txt")
 Let's examine Watanabe's Akaike Information Criterion (WAIC) for each of the models to see which of the covariate scenarios seems to be best supported by the available data.
 
 ```{r get_WAIC}
-WAIC <- vector("numeric",n_mods)
-cc_smry_1 <- matrix(NA,n_mods,3)
-colnames(cc_smry_1) <- paste0("linr_",c("lo","med","up"))
-## extract log densities from JAGS objects
-for(i in 1:n_mods) {
-  ldens <- cbind(matrix(0,mcmc_samp,(age_min)),
-                 mod_fits[[i]]$BUGSoutput$sims.list$lp_age)
-  ldens <- ldens + mod_fits[[i]]$BUGSoutput$sims.list$lp_esc
-  WAIC[i] <- waic(ldens)$waic
-  cc_smry_1[i,] <- mod_fits[[i]]$BUGSoutput$summary["c1", c("2.5%","50%","97.5%")]
-}
 d_WAIC <- round(WAIC-min(WAIC),1)
 wt_WAIC <- exp(-0.5*d_WAIC)/sum(exp(-0.5*d_WAIC))
 tbl_WAIC <- data.frame(life_stage=flow_meta$life_stage,
@@ -443,43 +459,26 @@ tbl_WAIC <- data.frame(life_stage=flow_meta$life_stage,
                        wt_WAIC=round(wt_WAIC,3),
                        round(cc_smry_1,2))
 write.csv(tbl_WAIC,  row.names = FALSE,
-          file = "Willamette_Chin_SR_flow_models_mainstem_model_selection_R_linear.csv")
+          file = file.path(jagsdir, "tbl_WAIC.csv"))
 best_idx <- which(tbl_WAIC$d_WAIC==0)
 tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag","WAIC"))]
 ```
 
 The model with the most support from the data is number `r best_idx`, which estimates a flow effect during the `r tbl_WAIC$life_stage[best_idx]` stage as the "`r tbl_WAIC$variable[best_idx]`" beginning on `r tbl_WAIC$begin[best_idx]` and ending on `r tbl_WAIC$end[best_idx]`.
 
-## Model-averaged effects
-
-Rather than focus on a best model, we can evaluate model-averaged predicted productivity across the various life stages.
-
-```{r mod_avg_flow_effects, eval=FALSE}
-mm <- rep(tbl_WAIC$wt_WAIC[fs_idx], each=length(scen_sp)*n_yrs_scen)
-tbl_fut_wtd <- mm * tbl_futures[,-c(1:3)]
-wtd_avg <- 0
-for(i in 1:nn) {
-  wtd_avg <- wtd_avg + tbl_fut_wtd[(1:(length(scen_sp)*n_yrs_scen))+(i-1)*(length(scen_sp)*n_yrs_scen),]
-}
-wtd_avg <- cbind(year=rep(yrs_scen,each=length(scen_sp)),
-                 spawners=rep(scen_sp,times=n_yrs_scen),
-                 round(wtd_avg,2))
-write.csv(wtd_avg, row.names = FALSE,
-          file="Willamette_Chin_SR_flow_models_mainstem_model_avg_scenarios.csv")
-```
-
 ## Diagnostics
 
 Here is a histogram of the Gelman & Rubin statistics $(R_{hat})$ for the estimated parameters from the best model. Recall that we set an upper threshold of `r Rhat_thresh`, so any parameters with $(R_{hat})$ values larger than `r Rhat_thresh` deserve some additional inspection.
 
 ```{r model_diagnostics}
-mod_fit <- mod_fits[[best_idx]]
+mod_fit <- readRDS(file.path(jagsdir, paste0("jags_mod_fit_cov_", best_idx, ".rds")))
 ## Rhat values for all parameters
 rh <- mod_fit$BUGSoutput$summary[,"Rhat"]
 ## histogram of Rhat values for all parameters
 par(mai=c(0.9,0.9,0.3,0.1))
-hist(rh, breaks=seq(0.99,ceiling(max(rh)/0.01)*0.01,by=0.01),main="",
-     col=rgb(0,0,255,alpha=50,maxColorValue=255),border="blue3",xlab=expression(italic(R[hat])))
+hist(rh, breaks=seq(0.99, ceiling(max(rh)/0.01)*0.01, by = 0.01), main = "",
+     col=rgb(0, 0, 255, alpha = 50, maxColorValue = 255),
+     border = "blue3", xlab = expression(italic(R[hat])))
 ## Rhat values > threshold
 bad_Rhat <- rh[rh>Rhat_thresh]
 ## prop of params with Rhat > threshold
