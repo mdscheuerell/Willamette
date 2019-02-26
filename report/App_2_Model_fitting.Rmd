@@ -47,19 +47,9 @@ if(!require("R2jags")) {
   install.packages("R2jags")
   library("R2jags")
 }
-# if(!require("rjags")) {
-#   install.packages("rjags")
-#   library("rjags")
-# }
-# if(!require("loo")) {
-#   install.packages("loo")
-#   library("loo")
-# }
 ## set directory locations
 datadir <- here("data")
 jagsdir <- here("jags")
-analdir <- here("analysis")
-savedir <- here("analysis/cache")
 ```
 
 We also need a couple of helper functions.
@@ -490,7 +480,7 @@ cat(run_time_in_min, file = file.path(jagsdir, "run_time_in_min.txt"))
 
 Let's examine Watanabe's Akaike Information Criterion (WAIC) for each of the models to see which of the covariate scenarios seems to be best supported by the available data.
 
-```{r get_WAIC}
+```{r get_WAIC, eval = FALSE}
 d_WAIC <- round(WAIC-min(WAIC),1)
 wt_WAIC <- exp(-0.5*d_WAIC)/sum(exp(-0.5*d_WAIC))
 tbl_WAIC <- data.frame(life_stage=cov_meta$life_stage,
@@ -506,6 +496,30 @@ write.csv(tbl_WAIC,  row.names = FALSE,
           file = file.path(jagsdir, "tbl_WAIC.csv"))
 best_idx <- which(tbl_WAIC$d_WAIC==0)
 tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag","WAIC"))]
+```
+
+```{r check_for_waic_tbl, echo = FALSE}
+if(file.exists(file.path(jagsdir, "tbl_WAIC.csv"))) {
+  tbl_WAIC <- read.csv(file.path(jagsdir, "tbl_WAIC.csv"))
+  best_idx <- which(tbl_WAIC$d_WAIC==0)
+  tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag","WAIC"))]
+} else {
+  d_WAIC <- round(WAIC-min(WAIC),1)
+  wt_WAIC <- exp(-0.5*d_WAIC)/sum(exp(-0.5*d_WAIC))
+  tbl_WAIC <- data.frame(life_stage=cov_meta$life_stage,
+                         variable=sub(" of 7-day mean","",cov_meta$long_name),
+                         begin=cov_meta$begin,
+                         end=cov_meta$end,
+                         lag=cov_meta$lag_1,
+                         WAIC=round(WAIC,1),
+                         d_WAIC=d_WAIC,
+                         wt_WAIC=round(wt_WAIC,3),
+                         round(cc_smry_1,2))
+  write.csv(tbl_WAIC,  row.names = FALSE,
+            file = file.path(jagsdir, "tbl_WAIC.csv"))
+  best_idx <- which(tbl_WAIC$d_WAIC==0)
+  tbl_WAIC[,!(names(tbl_WAIC) %in% c("lag","WAIC"))]
+}
 ```
 
 The model with the most support from the data is number `r best_idx`, which estimates a flow effect during the `r tbl_WAIC$life_stage[best_idx]` stage as the "`r tbl_WAIC$variable[best_idx]`" beginning on `r tbl_WAIC$begin[best_idx]` and ending on `r tbl_WAIC$end[best_idx]`.
