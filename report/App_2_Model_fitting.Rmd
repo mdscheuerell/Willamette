@@ -13,13 +13,22 @@ geometry: margin=1in
 
 ```{r set_options, echo = FALSE, message = FALSE}
 options(width = 100)
-knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(message = FALSE, size="small")
 set.seed(123)
 if(file.exists("cnt_time.txt")) {
   file.remove("cnt_time.txt")
 }
 mod_names <- data.frame(mod = rep(c("Ricker", "Beverton-Holt"), 2),
                         cov = rep(c("without", "with"), 2))
+def_chunk_hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def_chunk_hook(x, options)
+  ifelse(options$size != "normalsize",
+         ## TRUE
+         paste0("\\", options$size,"\n\n", x, "\n\n \\normalsize"),
+         ## FALSE
+         x)
+})
 ```
 
 \vspace{0.2in}
@@ -235,21 +244,22 @@ model {
 	## PRIORS
 	##--------
 	## alpha = exp(a) = intrinsic productivity
-	mu_Rkr_a ~ dnorm(0,1e-3)I(-4,4);
-	alpha <- exp(mu_Rkr_a);
+	alpha ~ dnorm(0,0.01) T(0,);
+	mu_Rkr_a <- log(alpha);
 	E_Rkr_a <- mu_Rkr_a + var_Qr/(2 - 2*phi^2);
 
 	## covariate effects
-	c1 ~ dnorm(0,0.001)
+	c1 ~ dnorm(0,0.01)
 
 	## strength of dens depend
-	Rkr_b ~ dunif(0,0.01);
+	b_inv ~ dnorm(1, 1e-9) T(1,);
+  Rkr_b <- pow(b_inv, -1);
 
 	## AR(1) coef for proc errors
-	phi ~ dunif(-0.999,0.999);
+	phi ~ dunif(-0.99,0.99);
 	
 	## process variance for recruits model
-	sd_Qr ~ dunif(0.001,20);
+	sd_Qr ~ dnorm(0, 0.05) T(0,);
 	tau_Qr <- pow(sd_Qr,-2);
 	var_Qr <- pow(sd_Qr,2)
 	
@@ -257,7 +267,7 @@ model {
 	innov_1 ~ dnorm(0,tau_Qr*(1-phi*phi));
 	
 	## obs variance for spawners
-	sd_Rs ~ dunif(0.001,3);
+	sd_Rs ~ dnorm(0, 0.001) T(0,);
 	tau_Rs <- pow(sd_Rs,-2);
 	var_Rs <- pow(sd_Rs,2)
 	
@@ -381,7 +391,7 @@ model {
 ", file=file.path(jagsdir, fn_jags))
 ```
 
-***
+
 # Fitting the model
 
 The last thing we need to do before fitting the model in JAGS is to specify:
@@ -408,7 +418,7 @@ par_jags <- c("alpha","E_Rkr_a","mu_Rkr_a","Rkr_b","ln_Rkr_a",
 ## 3. MCMC control params
 ## MCMC parameters
 mcmc_chains <- 4
-mcmc_length <- 2.5e5 # 7e5
+mcmc_length <- 3e5 # 7e5
 mcmc_burn <- 5e4 # 2e5
 mcmc_thin <- 200 # 400
 ## total number of MCMC samples
@@ -416,29 +426,30 @@ mcmc_samp <- (mcmc_length-mcmc_burn)*mcmc_chains/mcmc_thin
 
 ## 4. function to create JAGS inits
 init_vals <- function() {
-	list(mu_Rkr_a=1, c1=rnorm(1,0,0.1),
-	     Rkr_b=1/exp(mean(ln_dat_esc, na.rm=TRUE)),
-	     p_pi=1, p_mu=rep(1,A),
-	     p_vec=matrix(c(0.04,0.50,0.45,0.01),n_yrs-age_min,A,byrow=TRUE),
-	     Rec_mu=log(1000),
-	     Rec_sig=0.1,
-	     tot_ln_Rec=rep(log(1000),n_yrs-age_min),
-	     sd_Rs=0.1,
-	     innov_1=0,
-	     phi=0.5)
+	list(alpha = 2,
+	     c1 = rnorm(1,0,0.1),
+	     b_inv = exp(mean(ln_dat_esc, na.rm=TRUE)),
+	     p_pi = 1, p_mu = rep(1,A),
+	     p_vec = matrix(c(0.04,0.50,0.45,0.01),n_yrs-age_min,A,byrow=TRUE),
+	     Rec_mu = log(1000),
+	     Rec_sig = 0.1,
+	     tot_ln_Rec = rep(log(1000),n_yrs-age_min),
+	     sd_Rs = 0.1,
+	     innov_1 = 0,
+	     phi = 0.5)
 	}
 ```
 
-Now we can fit the models. Please note that the following code takes ~3 min to run on a quad-core machine with 3.5 GHz Intel processors.
+Now we can fit the models. Please note that the following code takes about an hour to run on a quad-core machine with 3.5 GHz Intel processors.
 
 ```{r start_timer, include=FALSE}
 ## start timer
 timer_start <- proc.time() 
 ```
 
-```{r JAGS_IO, message=FALSE, warning=FALSE}
+```{r JAGS_IO_public, eval=FALSE}
 ## list of model info for JAGS
-mod_jags <- list(data=dat_jags,
+mod_jags <- list(data = dat_jags,
                  inits = init_vals,
                  parameters.to.save = par_jags,
                  model.file = file.path(jagsdir, fn_jags),
@@ -466,6 +477,41 @@ for(i in 1:n_mods) {
   ldens <- ldens + mod_fit$BUGSoutput$sims.list$lp_esc
   WAIC[i] <- waic(ldens)$waic
   cc_smry_1[i,] <- mod_fit$BUGSoutput$summary["c1", c("2.5%","50%","97.5%")]
+}
+```
+
+```{r JAGS_IO, message=FALSE, warning=FALSE, echo=FALSE}
+if(length(grep(".rds", dir(file.path(jagsdir)), value = TRUE)) != n_mods) {
+  ## list of model info for JAGS
+  mod_jags <- list(data = dat_jags,
+                   inits = init_vals,
+                   parameters.to.save = par_jags,
+                   model.file = file.path(jagsdir, fn_jags),
+                   n.chains = as.integer(mcmc_chains),
+                   n.iter = as.integer(mcmc_length),
+                   n.burnin = as.integer(mcmc_burn),
+                   n.thin = as.integer(mcmc_thin),
+                   DIC = TRUE)
+  
+  ## empty table for model selection
+  WAIC <- vector("numeric", n_mods)
+  cc_smry_1 <- matrix(NA, n_mods, 3)
+  colnames(cc_smry_1) <- paste0("linr_", c("lo","med","up"))
+  
+  ## fit models & store results
+  for(i in 1:n_mods) {
+    ## get correct covariate
+    covar <- (cov_flow[,i+1] - mean(cov_flow[,i+1])) / sd(cov_flow[,i+1])
+    ## fit the model
+    mod_fit <- do.call(jags.parallel, mod_jags)
+    saveRDS(mod_fit, file = file.path(jagsdir, paste0("jags_mod_fit_cov_", i, ".rds")))
+    ## compute WAIC
+    ldens <- cbind(matrix(0,mcmc_samp,(age_min)),
+                   mod_fit$BUGSoutput$sims.list$lp_age)
+    ldens <- ldens + mod_fit$BUGSoutput$sims.list$lp_esc
+    WAIC[i] <- waic(ldens)$waic
+    cc_smry_1[i,] <- mod_fit$BUGSoutput$summary["c1", c("2.5%","50%","97.5%")]
+  }
 }
 ```
 
@@ -524,14 +570,14 @@ if(file.exists(file.path(jagsdir, "tbl_WAIC.csv"))) {
 
 The model with the most support from the data is number `r best_idx`, which estimates a flow effect during the `r tbl_WAIC$life_stage[best_idx]` stage as the "`r tbl_WAIC$variable[best_idx]`" beginning on `r tbl_WAIC$begin[best_idx]` and ending on `r tbl_WAIC$end[best_idx]`.
 
-## Diagnostics
+# Model diagnostics
 
 Here is a histogram of the Gelman & Rubin statistics $(R_{hat})$ for the estimated parameters from the best model. Recall that we set an upper threshold of `r Rhat_thresh`, so any parameters with $(R_{hat})$ values larger than `r Rhat_thresh` deserve some additional inspection.
 
 ```{r model_diagnostics}
-mod_fit <- readRDS(file.path(jagsdir, paste0("jags_mod_fit_cov_", best_idx, ".rds")))
+best_fit <- readRDS(file.path(jagsdir, paste0("jags_mod_fit_cov_", best_idx, ".rds")))
 ## Rhat values for all parameters
-rh <- mod_fit$BUGSoutput$summary[,"Rhat"]
+rh <- best_fit$BUGSoutput$summary[,"Rhat"]
 ## histogram of Rhat values for all parameters
 par(mai=c(0.9,0.9,0.3,0.1))
 hist(rh, breaks=seq(0.99, ceiling(max(rh)/0.01)*0.01, by = 0.01), main = "",
@@ -555,8 +601,6 @@ The convergence statistics indicate that some of the elements in $p$ for the est
 
 
 
-# Model diagnostics
-
 Here is a table of the Gelman & Rubin statistics $(R_{hat})$ for the estimated parameters. Recall that we set an upper threshold of `r Rhat_thresh`, so values larger than that deserve some additional inspection.
 
 ```{r model_diagnostics_2, eval=FALSE}
@@ -564,9 +608,7 @@ Here is a table of the Gelman & Rubin statistics $(R_{hat})$ for the estimated p
 par_conv <- c("alpha","beta",paste0("gamma[",seq(4),"]"),
               "sigma_r","sigma_s","pi_tau",paste0("pi_eta[",seq(A-1),"]"))
 ## Gelman-Rubin
-gelman.diag(best_fit[,par_conv])
+# gelman.diag(best_fit[,par_conv])
 ## Autocorrelation
-t(round(autocorr.diag(best_fit[,par_conv],
-                      lags = seq(mcmc_ctrl$thin, 4*mcmc_ctrl$thin, mcmc_ctrl$thin),
-                      relative=FALSE), 2))
+round(acf(best_fit$BUGSoutput$sims.list$ln_Rkr_a), 2)
 ```
