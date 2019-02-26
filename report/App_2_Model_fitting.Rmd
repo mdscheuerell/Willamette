@@ -73,6 +73,44 @@ Re2prec <- function(x, fun = "round", prec = 1) {
   if(prec<=0) { stop("\"prec\" cannot be less than or equal to 0") }
   do.call(map,list(x/prec))*prec
 }
+
+## colVars; from Gelman
+## returns the column-wise variance of a matrix
+colVars <- function(a) {
+	n <- dim(a)[[1]]
+	c <- dim(a)[[2]]
+	mm <- matrix(.colMeans(a, n, c), n, c, byrow = TRUE)
+	return(.colMeans(((a - mm) ^ 2), n, c) * n / (n - 1))
+}
+
+## waic; from Gelman
+## computes WAIC based on pointwise log-like
+waic <- function(log_lik) {
+  S <- nrow(log_lik)
+  n <- ncol(log_lik)
+  lpd <- log(colMeans(exp(log_lik)))
+  p_waic <- colVars(log_lik)
+  elpd_waic <- lpd - p_waic
+  waic <- -2*elpd_waic
+  loo_weights_raw <- 1/exp(log_lik-max(log_lik))
+  loo_weights_normalized <- loo_weights_raw /
+    matrix(colMeans(loo_weights_raw),nrow=S,ncol=n,byrow=TRUE)
+  loo_weights_regularized <- pmin(loo_weights_normalized, sqrt(S))
+  elpd_loo <- log(colMeans(exp(log_lik)*loo_weights_regularized) /
+                    colMeans(loo_weights_regularized))
+  p_loo <- lpd - elpd_loo
+  pointwise <- cbind(waic,lpd,p_waic,elpd_waic,p_loo,elpd_loo)
+  total <- colSums(pointwise)
+  se <- sqrt(n*colVars(pointwise))
+  return(list(waic=total["waic"],
+              elpd_waic=total["elpd_waic"],
+              p_waic=total["p_waic"],
+              elpd_loo=total["elpd_loo"],
+              p_loo=total["p_loo"],
+              pointwise=pointwise,
+              total=total,
+              se=se))
+}
 ```
 
 # User inputs
@@ -91,12 +129,13 @@ fn_jags <- "Willamette_Chin_SR_flow_models_mainstem_JAGS.txt"
 Rhat_thresh <- 1.1
 ```
 
-Next we specify the names of four necessary data files containing the following information:
+Next we specify the names of five necessary data files containing the following information:
  
  1. observed total number of adult spawners (escapement) by year;
  2. observed age composition of adult spawners by year;
  3. observed total harvest by year;
- 4. flow covariates by year.
+ 4. flow covariates by year;
+ 5. metadata for flow covariates.
 
 
 ```{r get_filenames}
@@ -112,9 +151,12 @@ fn_age <- "chin_agecomp.csv"
 ## [n_yrs x 2] matrix of obs catch; 1st col is calendar yr
 fn_harv <- "chin_harv.csv"
 
-## 3. file with harvest data
+## 4. file with harvest data
 ## [n_yrs x 2] matrix of obs catch; 1st col is calendar yr
 fn_cov <- "Willamette_Chin_SR_mainstem_flow_covariates.csv"
+
+## 5. covariate metadata
+cov_meta_file <- "chin_cov_metadata.csv"
 ```
 
 # Loading the fish data
@@ -362,11 +404,6 @@ The last thing we need to do before fitting the model in JAGS is to specify:
 
 4. a function to specify initial conditions. 
 
-```{r start_timer, include=FALSE}
-## start timer
-timer_start <- proc.time() 
-```
-
 ```{r JAGS_controls}
 ## 1. data to pass to JAGS
 dat_jags <- c("dat_age","ln_dat_esc","dat_harv","covar",
@@ -381,9 +418,9 @@ par_jags <- c("alpha","E_Rkr_a","mu_Rkr_a","Rkr_b","ln_Rkr_a",
 ## 3. MCMC control params
 ## MCMC parameters
 mcmc_chains <- 4
-mcmc_length <- 7e3 # 7e5
-mcmc_burn <- 2e3 # 2e5
-mcmc_thin <- 4 # 400
+mcmc_length <- 2.5e5 # 7e5
+mcmc_burn <- 5e4 # 2e5
+mcmc_thin <- 200 # 400
 ## total number of MCMC samples
 mcmc_samp <- (mcmc_length-mcmc_burn)*mcmc_chains/mcmc_thin
 
@@ -404,7 +441,12 @@ init_vals <- function() {
 
 Now we can fit the models. Please note that the following code takes ~3 min to run on a quad-core machine with 3.5 GHz Intel processors.
 
-```{r JAGS_IO, message=FALSE, warning=FALSE, cache=TRUE}
+```{r start_timer, include=FALSE}
+## start timer
+timer_start <- proc.time() 
+```
+
+```{r JAGS_IO, message=FALSE, warning=FALSE}
 ## list of model info for JAGS
 mod_jags <- list(data=dat_jags,
                  inits = init_vals,
@@ -415,12 +457,15 @@ mod_jags <- list(data=dat_jags,
                  n.burnin = as.integer(mcmc_burn),
                  n.thin = as.integer(mcmc_thin),
                  DIC = TRUE)
+
 ## empty table for model selection
 WAIC <- vector("numeric", n_mods)
 cc_smry_1 <- matrix(NA, n_mods, 3)
 colnames(cc_smry_1) <- paste0("linr_", c("lo","med","up"))
+
 ## fit models & store results
 for(i in 1:n_mods) {
+  ## get correct covariate
   covar <- (cov_flow[,i+1] - mean(cov_flow[,i+1])) / sd(cov_flow[,i+1])
   ## fit the model
   mod_fit <- do.call(jags.parallel, mod_jags)
@@ -432,14 +477,13 @@ for(i in 1:n_mods) {
   WAIC[i] <- waic(ldens)$waic
   cc_smry_1[i,] <- mod_fit$BUGSoutput$summary["c1", c("2.5%","50%","97.5%")]
 }
-# save(list=ls(), file="Willamette_Chin_SR_flow_models_mainstem.RData")
 ```
 
 
 ```{r stop_timer, include=FALSE}
 ## stop timer
 run_time_in_min <- round(((proc.time()-timer_start)/60)["elapsed"], 1)
-cat(run_time_in_min, file = "run_time_in_min.txt")
+cat(run_time_in_min, file = file.path(jagsdir, "run_time_in_min.txt"))
 ```
 
 # Finding the best model
@@ -449,11 +493,11 @@ Let's examine Watanabe's Akaike Information Criterion (WAIC) for each of the mod
 ```{r get_WAIC}
 d_WAIC <- round(WAIC-min(WAIC),1)
 wt_WAIC <- exp(-0.5*d_WAIC)/sum(exp(-0.5*d_WAIC))
-tbl_WAIC <- data.frame(life_stage=flow_meta$life_stage,
-                       variable=sub(" of 7-day mean","",flow_meta$long_name),
-                       begin=flow_meta$begin,
-                       end=flow_meta$end,
-                       lag=flow_meta$lag_1,
+tbl_WAIC <- data.frame(life_stage=cov_meta$life_stage,
+                       variable=sub(" of 7-day mean","",cov_meta$long_name),
+                       begin=cov_meta$begin,
+                       end=cov_meta$end,
+                       lag=cov_meta$lag_1,
                        WAIC=round(WAIC,1),
                        d_WAIC=d_WAIC,
                        wt_WAIC=round(wt_WAIC,3),
@@ -501,7 +545,7 @@ The convergence statistics indicate that some of the elements in $p$ for the est
 
 Here is a table of the Gelman & Rubin statistics $(R_{hat})$ for the estimated parameters. Recall that we set an upper threshold of `r Rhat_thresh`, so values larger than that deserve some additional inspection.
 
-```{r model_diagnostics, eval=FALSE}
+```{r model_diagnostics_2, eval=FALSE}
 ## params of interest
 par_conv <- c("alpha","beta",paste0("gamma[",seq(4),"]"),
               "sigma_r","sigma_s","pi_tau",paste0("pi_eta[",seq(A-1),"]"))
