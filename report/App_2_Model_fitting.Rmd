@@ -627,9 +627,9 @@ par_jags <- c("alpha","E_Rkr_a","mu_Rkr_a",
 ## 3. MCMC control params:
 mcmc_ctrl <- list(
   chains = 4,
-  length = 1e5,
+  length = 1.25e5,
   burn = 5e4,
-  thin = 80
+  thin = 100
 )
 ## total number of MCMC samples after burnin
 mcmc_samp <- mcmc_ctrl$length*mcmc_ctrl$chains/mcmc_ctrl$thin
@@ -640,7 +640,7 @@ mcmc_samp <- mcmc_ctrl$length*mcmc_ctrl$chains/mcmc_ctrl$thin
 timer_start <- proc.time() 
 ```
 
-Please note that the following code takes ~80 min to run on a quad-core machine with 3.5 GHz Intel processors.
+Please note that the following code takes ~60 min to run on a quad-core machine with 3.5 GHz Intel processors.
 
 ```{r fit_models, echo = TRUE, message = FALSE, warning = FALSE}
 ## total number of models to fit
@@ -729,17 +729,34 @@ best_fit <- readRDS(file.path(jagsdir, paste0("fit_ricker_cov_", best_i, ".rds")
 
 # Model diagnostics
 
+## Gelman & Rubin statistic
+
 Here is a table of the Gelman & Rubin statistics $(R_{hat})$ for the estimated parameters. Recall that we set an upper threshold of `r Rhat_thresh`, so values larger than that deserve some additional inspection.
 
-```{r model_diagnostics}
+```{r diag_rhat}
 ## params of interest
 par_conv <- c("alpha","beta","gamma",
               "sigma_r","sigma_s",
-              "pi_tau",paste0("pi_eta[",seq(A-1),"]"))
+              "pi_tau",paste0("pi_eta[",seq(A-1),"]"),
+              paste0("Sp[",seq(n_yrs),"]"),
+              paste0("tot_ln_Rec[",seq(n_yrs-age_min),"]"))
 ## Gelman-Rubin
 gelman.diag(best_fit[,par_conv])
+```
+
 ## Autocorrelation
+
+```{r diag_acf}
 t(round(autocorr.diag(best_fit[,par_conv],
-                      lags = seq(mcmc_ctrl$thin, 4*mcmc_ctrl$thin, mcmc_ctrl$thin),
+                      lags = seq(mcmc_ctrl$thin, 3*mcmc_ctrl$thin, mcmc_ctrl$thin),
                       relative=FALSE), 2))
 ```
+
+
+## Effective sample sizes
+
+```{r diag_neff}
+floor(effectiveSize(best_fit))
+```
+
+
