@@ -97,20 +97,20 @@ fit_jags <- function(model, data, params, inits, ctrl, dir = jagsdir) {
 
 ## inits function for base model
 init_vals_AR <- function() {
-	list(alpha = 5,
-	     beta_inv = exp(mean(ln_dat_esc, na.rm = TRUE)),
-	     pi_tau = 10,
-	     pi_eta = rep(1,A),
-	     pi_vec = matrix(c(0.05,0.5,0.4,0.05),
-	                     n_yrs-age_min, A, 
-	                     byrow = TRUE),
-	     Rec_mu = log(1000),
-	     Rec_sig = 0.1,
-	     sigma_r = 0.5,
-	     sigma_s = 0.1,
-	     tot_ln_Rec = rep(log(1000), n_yrs - age_min),
-	     innov_1 = 0,
-	     phi = 0.5)
+  list(alpha = 5,
+       beta_inv = exp(mean(ln_dat_esc, na.rm = TRUE)),
+       pi_tau = 10,
+       pi_eta = rep(1,A),
+       pi_vec = matrix(c(0.05,0.5,0.4,0.05),
+                       n_yrs-age_min, A, 
+                       byrow = TRUE),
+       Rec_mu = log(1000),
+       Rec_sig = 0.1,
+       sigma_r = 0.5,
+       sigma_s = 0.1,
+       tot_ln_Rec = rep(log(1000), n_yrs - age_min),
+       innov_1 = 0,
+       phi = 0.5)
 }
 
 ## inits function for cov models
@@ -120,7 +120,7 @@ init_vals_cov <- function() {
        gamma = 0,
        pi_tau = 10,
        pi_eta = rep(1,A),
-	     pi_vec = matrix(c(0.05,0.5,0.4,0.05),
+       pi_vec = matrix(c(0.05,0.5,0.4,0.05),
                        n_yrs-age_min, A, 
                        byrow = TRUE),
        Rec_mu = log(1000),
