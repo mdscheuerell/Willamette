@@ -90,7 +90,7 @@ n_fore <- 0
 CI_vec <- c(0.025,0.5,0.975)
 
 ## covariate names & units for plotting
-cov_name <- expression(paste("Flow (",m^3," ",s^{-1},")"))
+cov_name <- expression(paste("Flow (",ft^3," ",s^{-1},")"))
 
 ## best model
 best_i <- 29
@@ -107,8 +107,8 @@ best_fit <- readRDS(file.path(jagsdir, paste0("fit_ricker_cov_", best_i, ".rds")
 ```{r load_covariates}
 ## covariate(s)
 dat_cvrs <- read_csv(file.path(datadir, "Willamette_Chin_SR_mainstem_flow_covariates.csv"))
-## total number of covariates
-n_cov <- dim(dat_cvrs)[2] - 1
+t_idx <- seq(yr_frst, length.out = n_yrs-age_min)
+dat_cvrs <- as.matrix(dat_cvrs[seq(length(t_idx)),])
 ```
 
 ```{r get_escapement_data}
@@ -160,13 +160,14 @@ yp_max <- max(p_dat)
 par(mai = c(0.8,0.8,0.1,0.1), omi = c(0.5,0.2,0.1,0.2))
 plot(t_idx_f, p_dat[3,], ylim = c(yp_min,yp_max), type = "n",
      log = "y", xaxt = "n", yaxt = "n", bty = "L",
-     xlab = "Year", ylab = "Catch + escapement", main = "", cex.lab = 1.2)
+     xlab = "Year", ylab = "Catch + escapement (1000s)", main = "", cex.lab = 1.2)
 polygon(c(t_idx_f, rev(t_idx_f)), c(p_dat[3,], rev(p_dat[1,])),
         col = clr, border = NA)
 lines(t_idx_f, p_dat[2,], col = "blue3", lwd = 2)
-points(t_idx_f, exp(ln_dat_esc) + dat_harv, pch = 16, cex = 1)
+points(cbind(t_idx_f, exp(ln_dat_esc) + dat_harv), pch = 16, cex = 1)
 axis(1, at = seq(1980, 2015, 5))
-axis(2, at = c(4000, 8000, 16000))
+axis(2, at = c(5000, 10000, 20000, 40000),
+     labels = c(c(5, 10, 20, 40)), las = 1)
 ```
 
 ```{r, echo=FALSE}
@@ -200,8 +201,21 @@ r_dat <- mod_res[, grep("tot_ln_Rec", colnames(mod_res))]
 r_dat <- exp(apply(r_dat, 2, quantile, CI_vec))
 
 ## median values for a & b
-aa <- apply(mod_res[, grep("ln_BH_a", colnames(mod_res))], 2, median)
+aa <- apply(mod_res[, grep("ln_Rkr_a", colnames(mod_res))], 2, median)
 bb <- median(mod_res[, "beta"])
+
+## alpha
+a_thresh <- 6
+alpha_est <- mod_res[, "alpha"] * exp(mod_res[, "gamma"] * median(dat_cvrs[,best_i+1]))
+alphaCI <- quantile(alpha_est, CI_vec)
+alpha_est[alpha_est > a_thresh] <- a_thresh
+
+## K in 1000s
+R_b_est <- log(alpha_est) / mod_res[, "beta"] / 1000
+R_b_est <- R_b_est[R_b_est > 0]
+R_b_CI <- quantile(R_b_est, CI_vec)
+## pile into last ban for plotting
+R_b_est[R_b_est > 30] <- 30
 
 ## empty plot space for spawner-recruit relationships
 dd <- 3000
@@ -215,10 +229,14 @@ plot(s_dat[2,], r_dat[2,], xlim = c(0,xM), ylim = c(0,yM), type = "n",
      xaxt = "n", yaxt = "n", bty="L")
 axis(1, at = seq(0,xM,dd*2), labels = seq(0,xM,dd*2)/1000)
 axis(2, at = seq(0,yM,dd*2), labels = seq(0,yM,dd*2)/1000, las=1)
-for(i in 1:length(aa)) {
-  lines(exp(aa[i]) * seq(0,xM) / (1 + bb * seq(0,xM)),
+for(i in 1:length(alphaCI)) {
+  lines(alphaCI[i] * seq(0,xM) * exp(-bb * seq(0,xM)),
         col = "darkgray")
 }
+# for(i in 1:length(aa)) {
+#   lines(exp(aa[i]) * seq(0,xM) * exp(-bb * seq(0,xM)),
+#         col = "darkgray")
+# }
 abline(a = 0,b = 1,lty = "dashed")
 
 ## add S-R estimates and medians
@@ -250,13 +268,8 @@ text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
 
 ## posterior for alpha
 clr <- rgb(0, 0, 255, alpha = 50, maxColorValue = 255)
-a_thresh <- 59
 par(mai = c(0.8,0.4,0.3,0.1))
-## B-H alpha
-R_alpha_est <- mod_res[, "alpha"]
-alphaCI <- quantile(R_alpha_est, CI_vec)
-R_alpha_est[R_alpha_est > a_thresh] <- a_thresh
-hist(R_alpha_est, freq = FALSE, breaks = seq(0, a_thresh+1, 2),
+hist(alpha_est, freq = FALSE, breaks = seq(0, a_thresh+1, 0.2),
      col = clr, border = "blue3",
      xlab = "", ylab = "", main = "", cex.lab = 1.2, yaxt = "n")
 aHt <- (par()$usr[4]-par()$usr[3])/12
@@ -269,17 +282,8 @@ text(x = par()$usr[1],
 
 ## posterior for K
 par(mai = c(0.8,0.4,0.3,0.1))
-aa <- mod_res[, "alpha"]
-bb <- mod_res[, "beta"]
-## K in 1000s
-R_b_est <- (aa-1) / bb / 1000
-R_b_est <- R_b_est[R_b_est > 0]
-R_b_CI <- quantile(R_b_est, CI_vec)
-## pile into last ban for plotting
-R_b_est[R_b_est > 13] <- 13
 brks <- seq(Re2prec(min(R_b_est), "floor"),
-            Re2prec(max(R_b_est), "ceiling"),
-            length.out = length(seq(0, a_thresh, 2)))
+            Re2prec(max(R_b_est), "ceiling", 2))
 hist(R_b_est, freq = FALSE, breaks = brks, col = clr, border = "blue3",
      xlab = "", xaxt = "n", yaxt = "n",
      main = "", ylab = "", cex.lab = 1.2)
@@ -300,66 +304,55 @@ text(x = par()$usr[1],
 cnt <- cnt + 1
 ```
 
-`r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming mean values for all covariates (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. Gray lines show the median relationship for each of the 41 years in the time series based on annual model estimates of productivity. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles.", display = "full")`
+`r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming mean values for all covariates (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. Gray lines show the median relationship for each of the 16 years in the time series based on annual estimates of productivity. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles.", display = "full")`
 
 
 ## Covariate effects
 
 Here are time series plots of the covariates (a-c) and histograms of their effects on productivity (d-f).
 
-```{r plot_cov_effects, fig.width=8, fig.height=10, fig.pos="placeHere", warnings=FALSE, messages=FALSE, fig.align="center"}
+```{r plot_cov_effects, fig.width=8, fig.height=4, fig.pos="placeHere", warnings=FALSE, messages=FALSE, fig.align="center"}
 clr <- rgb(0, 0, 255, alpha = 50, maxColorValue = 255)
-xoffSet <- 0.04
+xoffSet <- 0.05
 yoffSet <- 0.03
 
-par(mfrow=c(n_cov,2), mai=c(0.4,0.2,0.1,0.1), omi=c(0.2,0.5,0,0))
+par(mfrow=c(1,2), mai=c(0.4,0.4,0.1,0.1), omi=c(0.5,0.5,0,0))
 
-c_est <- mod_res[,grep("gamma", colnames(mod_res))]
-ylN <- floor(min(c_est)*10)/10
-ylM <- ceiling(max(c_est)*10)/10
-brks <- seq(ylN,ylM,length.out=diff(c(ylN,ylM))*40+1)
-t_idx <- seq(yr_frst,length.out=n_yrs-age_min+n_fore)
-dat_cvrs <- as.matrix(dat_cvrs[seq(length(t_idx)),])
+c_est <- mod_res[,grep("gamma", colnames(mod_res))] * 1000
+ylN <- Re2prec(min(c_est), "floor", 0.02)
+ylM <- Re2prec(max(c_est), "ceiling", 0.02)
+brks <- seq(ylN,ylM, length.out = diff(c(ylN,ylM))*400+1)
 
-for(i in 1:n_cov) {
-  if(i==4) {
-    dat_cvrs[,i+1] <- dat_cvrs[,i+1]/1000
-  }
-  ## plot covar ts
-  plot(dat_cvrs[, "year"], dat_cvrs[, i+1],
-       pch = 16, col = "blue3", type = "o",
-       xlab = "", ylab = "", main = "", bty = "L",
-       cex.axis = 1.2)
-  text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
-       y = par()$usr[4] - diff(par()$usr[3:4]) * yoffSet,
-       paste0("(",letters[i],")"),
-       cex = 1.2)
-  mtext(side = 2, cov_names[i], line = 3, cex = 1.2)
-  if(i == n_cov) {
-    mtext(side = 1, "Brood year", line = 3)
-  }
-  ## plot covar effect
-  hist(c_est[,i],
-       freq = FALSE, breaks = brks, col = clr, border =" blue3",
-       xlab = "", yaxt = "n", main = "", ylab = "", cex.axis = 1.2)
-  c_CI <- quantile(c_est[,i],CI_vec)
-  aHt <- (par()$usr[4]-par()$usr[3])/20
-  arrows(c_CI, par()$usr[3]-0.005, c_CI, par()$usr[3] - aHt,
-         code = 1,length = 0.05, xpd = NA, col = "blue3", lwd = 1.5)
-  abline(v = 0, lty = "dashed")
-  text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
-       y = par()$usr[4] - diff(par()$usr[3:4]) * yoffSet,
-       paste0("(",letters[i+n_cov],")"),
-       cex = 1.2)
-  if(i == n_cov) { mtext(side = 1,"Effect size", line = 3) }
-}
+## plot covar ts
+plot(dat_cvrs[, 1], dat_cvrs[, best_i+1]/1000,
+     pch = 16, col = "blue3", type = "o",
+     xlab = "", ylab = "", main = "", bty = "L", las = 1)
+text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
+     y = par()$usr[4] - diff(par()$usr[3:4]) * yoffSet,
+     "(a)")
+mtext(side = 2, "Flow (1000 cfs)", line = 3, cex = 1.2)
+mtext(side = 1, "Brood year", line = 3, cex = 1.2)
+
+## plot covar effect
+hist(c_est,
+     freq = FALSE, breaks = brks, col = clr, border =" blue3",
+     xlab = "", yaxt = "n", main = "", ylab = "")
+c_CI <- quantile(c_est,CI_vec)
+aHt <- (par()$usr[4]-par()$usr[3])/20
+arrows(c_CI, par()$usr[3]-0.005, c_CI, par()$usr[3] - aHt,
+       code = 1,length = 0.05, xpd = NA, col = "blue3", lwd = 1.5)
+abline(v = 0, lty = "dashed")
+text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
+     y = par()$usr[4] - diff(par()$usr[3:4]) * yoffSet,
+     "(b)")
+mtext(side = 1,"Effect size (per 1000 cfs)", line = 3, cex = 1.2)
 ```
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
 ```
 
-`r fig_cap(cnt, caption = "Time series of the environmental covariates used in the model (a-d), and their estimated effects on population productivity (e-g). Small arrows under histograms denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the environmental covariates used in the model (a), and their estimated effects on population productivity (e-g). Small arrows under histograms denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
 ## Process errors
 
@@ -392,125 +385,4 @@ cnt <- cnt + 1
 
 `r fig_cap(cnt, caption = "Time series of the estimated process errors, which represent the population's productivity after accounting for the effects of density dependence and environmental covariates. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
 
-## Management reference points
-
-Here are a number of management reference points.
-
-```{r ref_pts}
-## abbreviations for ref points
-ref_names <- c("MSY", "Smsy", "Umsy", "Umax")
-## proportions of MSY to consider
-yld_prop <- c(0.75, 0.85, 0.95)
-## median values for a & b
-aa <- mod_res[, grep("E_BH_a", colnames(mod_res))]
-alpha <- exp(aa)
-mcmc <- length(aa)
-beta <- mod_res[, grep("beta", colnames(mod_res))]
-
-## empty matrix for ref pts
-ref_pts <- matrix(NA, mcmc, length(ref_names))
-colnames(ref_pts) <- ref_names
-## spawner series for optimal yield profile
-SS <- seq(100, 1e4, 100)
-## empty matrix for optimal yield profiles
-OYP <- matrix(0, length(SS), length(yld_prop))
-for(i in 1:mcmc) {
-	## spawners at MSY
-	ref_pts[i, "Smsy"] <- (alpha[i] / beta[i]) * sqrt(1 / alpha[i]) - (1 / beta[i])
-	## MSY
-	ref_pts[i, "MSY"] <- (ref_pts[i,"Smsy"] * alpha[i]) /
-	                        (1 + beta[i] * ref_pts[i, "Smsy"]) - ref_pts[i, "Smsy"]
-	## harvest rate at MSY
-	ref_pts[i, "Umsy"] <- 1 - sqrt(1 / alpha[i])
-	## max harvest rate
-	ref_pts[i, "Umax"] <- 1 - 1/alpha[i]
-	## yield over varying S
-	yield <- ((SS * alpha[i]) / (1 + beta[i] * SS)) - SS
-	for(j in 1:length(yld_prop)) {
-		OYP[,j] <- OYP[,j] + 1*(yield > yld_prop[j] * ref_pts[i, "MSY"])
-	}
-}
-OYP <- OYP/mcmc
-
-## Prob of overfishing
-hh <- seq(100)
-Pr_over <- cbind(hh,hh,hh)
-colnames(Pr_over) <- c("Umsy75","Umsy","Umax")
-for(i in hh) {
-  Pr_over[i,"Umsy75"] <- sum(ref_pts[,"Umsy"] * 0.75 < i/100)/mcmc
-  Pr_over[i,"Umsy"] <- sum(ref_pts[,"Umsy"] < i/100)/mcmc
-  Pr_over[i,"Umax"] <- sum(ref_pts[,"Umax"] < i/100)/mcmc
-}
-
-## posterior exploitation rate & spawner abundance
-aer <- Sp_ts <- mod_res[,grep("Sp", colnames(mod_res))]
-for(i in 1:n_yrs) {
-	aer[,i] <- dat_harv[i] / (dat_harv[i] + Sp_ts[,i]) 
-}
-```
-
-
-```{r plot_ref_pts, fig.width=8, fig.height=4, warning=FALSE, fig.pos = "placeHere", fig.align="center"}
-layout(matrix(c(2, 1, 4, 3), 2, 2), heights = c(1, 5))
-yoffSet <- 0.10
-yoffSet <- 0.05
-
-## (a) Optimal yield profile
-par(mai=c(0.9, 0.9, 0, 0), omi=c(0, 0, 0.1, 0.1))
-x_lp <- yld_prop
-for(i in 1:length(x_lp)) {
-	x_lp[i] <- SS[max(which(OYP[,i] == max(OYP[,i])
-	                        | abs(OYP[,i] - (yld_prop[i]-0.3)) <= 0.05))]
-}
-matplot(SS, OYP, type="l", lty="solid",  ylim=c(0,1),
-        col=c("slateblue","blue","darkblue"), lwd=2,
-        xlab = "Spawners", ylab = "Probability of X% of MSY", main = "",
-        las=1, cex.lab=1.2)
-points(x = x_lp, y = yld_prop-0.3,
-       pch = 21, cex = 3.5,
-       col = "white", bg = "white")
-text(x = x_lp, y = yld_prop-0.3, paste0(yld_prop*100, "%"),
-     col=c("slateblue","blue","darkblue"), cex=0.7)
-text(x = par()$usr[1] + xoffSet * diff(par()$usr[1:2]),
-     y = par()$usr[4] - yoffSet * diff(par()$usr[3:4]),
-     "(a)")
-## marginal histogram of posterior spawner abundances
-par(mai=c(0, 0.9, 0.05, 0))
-hist(Sp_ts[Sp_ts<1e4], breaks = 40,
-     col = clr, border = "blue3", 
-     yaxs = "i", xaxt = "n", yaxt = "n",
-     main = "", ylab = "")
-
-## (b) Probability of overfishing
-par(mai=c(0.9, 0.9, 0, 0))
-matplot(Pr_over, type = "l", lwd = 2, lty = "solid",
-        col = c("slateblue","blue","darkblue"), 
-        ylab="Probability of overfishing", 
-        xlab="Harvest rate", xaxt="n",
-        las = 1, cex.lab = 1.2)
-axis(1, seq(0,100,20), seq(0,100,20)/100)
-x_lp <- c(0, 0, 0)
-for(i in 1:length(x_lp)) {
-  x_lp[i] <- max(which(abs(Pr_over[,i] - 0.5) <= 0.05))
-}
-points(x = x_lp, y = rep(0.5, 3), pch = 21, cex = 4,
-       col = "white", bg = "white")
-text(x = x_lp, y = 0.5, expression(U[M75], U[MSY], U[Max]),
-     col = c("slateblue", "blue", "darkblue"), cex = 0.8)
-text(x = par()$usr[1] + xoffSet * diff(par()$usr[1:2]),
-     y = par()$usr[4] - yoffSet * diff(par()$usr[3:4]),
-     "(b)")
-## marginal histogram of posterior harvest rates
-par(mai = c(0 ,0.9, 0.05, 0))
-hist(aer, breaks = seq(0, 40)/40,
-     col = clr, border = "blue3",
-     yaxs = "i", xaxt = "n", yaxt = "n",
-     main = "", ylab = "")
-```
-
-```{r, echo=FALSE}
-cnt <- cnt + 1
-```
-
-`r fig_cap(cnt, caption = "Plots of (a) the probability that a given number of spawners produces average yields achieving 95%, 85%, or 75% of the estimated maximum sustainable yield (MSY); and (b) the cumulative probability of overfishing the population, based on harvest rates equal to those at 75% of MSY, at MSY, and at the maximum per recruit. The histograms above (a) and (b) are distributions of the posterior estimates for the number of spawners and harvest rates, respectively; the histogram in (a) has been truncated at $10^4$.", display = "full")`
 
