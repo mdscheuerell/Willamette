@@ -1,6 +1,5 @@
 ---
 title: "Appendix S2. Model definitions, model fitting, and model evaluation."
-subtitle: Supporting information for Scheuerell et al.
 output:
   pdf_document:
     highlight: haddock
@@ -54,6 +53,14 @@ if(!require("rjags")) {
 if(!require("loo")) {
   install.packages("loo")
   library("loo")
+}
+if(!require("knitr")) {
+  install.packages("knitr")
+  library("knitr")
+}
+if(!require("kableExtra")) {
+  install.packages("kableExtra")
+  library("kableExtra")
 }
 ## set directory locations
 datadir <- here("data")
@@ -699,10 +706,10 @@ t(round(autocorr.diag(base_mod[,par_conv],
 
 # Model selection
 
-Via `loo()` and `compare()` with full table of results. Note that `elpd_diff` will be negative (positive) if the expected predictive accuracy for the first (second) model is higher.
+Here is a table of LOOIC results as estimated with `loo()`.
 
 ```{r get_LOOIC_c, warning=FALSE}
-## table of LOOIC values
+## data frame of LOOIC values
 tbl_LOOIC <- as.data.frame(round(compare(x = LOOIC), 1))
 tbl_LOOIC$d_looic <- -2 * tbl_LOOIC$elpd_diff
 tbl_LOOIC <- tbl_LOOIC[, c("p_loo", "se_p_loo", "looic", "se_looic", "d_looic")]
@@ -714,11 +721,11 @@ tbl_LOOIC <- data.frame(life_stage = c("base", cov_meta$life_stage),
                         end = c("NA", cov_meta$end),
                         lag = c(NA, cov_meta$lag_1),
                         tbl_LOOIC)
-tbl_LOOIC[order(tbl_LOOIC[,"looic"]), ]
-
-## best model
-best_i <- which(tbl_LOOIC[,"looic"] == min(tbl_LOOIC[,"looic"]))
+## best model; need to subtract 1 from index to acct for base model
+best_i <- which(tbl_LOOIC[,"looic"] == min(tbl_LOOIC[,"looic"])) - 1
 best_fit <- readRDS(file.path(jagsdir, paste0("fit_ricker_cov_", best_i, ".rds")))
+## table of LOOIC values
+kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),], "latex", booktabs = TRUE)
 ```
 
 
