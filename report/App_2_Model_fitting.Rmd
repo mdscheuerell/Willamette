@@ -15,11 +15,6 @@ geometry: margin=1in
 options(width = 100)
 knitr::opts_chunk$set(message = FALSE, size="small")
 set.seed(123)
-if(file.exists("cnt_time.txt")) {
-  file.remove("cnt_time.txt")
-}
-mod_names <- data.frame(mod = rep(c("Ricker", "Beverton-Holt"), 2),
-                        cov = rep(c("without", "with"), 2))
 def_chunk_hook  <- knitr::knit_hooks$get("chunk")
 knitr::knit_hooks$set(chunk = function(x, options) {
   x <- def_chunk_hook(x, options)
@@ -617,7 +612,7 @@ dat_jags <- list(dat_age = dat_age,
                  n_yrs = n_yrs) 
 
 ## 2. Model params/states for JAGS to return:
-par_jags <- c("alpha","E_Rkr_a","mu_Rkr_a",
+par_jags <- c("alpha","E_Rkr_a","ln_Rkr_a",
               "beta",
               "Sp","Rec","tot_ln_Rec","ln_RS",
               "pi_eta","pi_tau",
