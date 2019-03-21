@@ -64,7 +64,7 @@ We also need a couple of helper functions.
 
 ```{r define_funcs}
 ## better round
-Re2prec <- function(x, fun = "round", prec = 1) {
+Re2prec <- function(x, map = "round", prec = 1) {
   ## 'fun' can be "round", "floor", or "ceiling"
   ## 'prec' is nearest value
   ## (eg, 0.1 is to nearest tenth; 1 is to nearest integer)
