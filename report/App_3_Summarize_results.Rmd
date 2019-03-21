@@ -101,7 +101,7 @@ CI_vec <- c(0.025,0.5,0.975)
 cov_name <- expression(paste("Flow (",ft^3," ",s^{-1},")"))
 
 ## best model
-best_i <- 29
+best_i <- 28
 ```
 
 # Load the information
@@ -410,7 +410,7 @@ cnt <- cnt + 1
 
 \small
 
-`r fig_cap(cnt, caption = "Time series of the maximum of the 7-day mean flow during the month of April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the range of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
 \newpage
 
