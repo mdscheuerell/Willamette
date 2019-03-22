@@ -6,13 +6,15 @@ output:
     toc: yes
     number_sections: true
     toc_depth: '3'
+    includes:
+      in_header: preamble.tex
 fontsize: 11pt
 geometry: margin=1in
 ---
 
 ```{r set_options, echo = FALSE, message = FALSE}
 options(width = 100)
-knitr::opts_chunk$set(message = FALSE, size="small")
+knitr::opts_chunk$set(message = FALSE, size="small", vspaceplot='2em')
 def_chunk_hook  <- knitr::knit_hooks$get("chunk")
 knitr::knit_hooks$set(chunk = function(x, options) {
   x <- def_chunk_hook(x, options)
@@ -182,11 +184,6 @@ K_est[K_est > 24] <- 24
 ra <- 3
 rb <- 1.2e-4
 
-## ref pts
-rmr <- ra/rb*exp(-1)
-rsy <- (1 - lambert_W0(exp(1)/ra)) / rb
-ruy <- 1 - lambert_W0(exp(1)/ra)
-
 ## S-R curve
 ## spawners
 ss <- seq(0,1.2e4,10)
@@ -207,13 +204,6 @@ text(12300, ra*max(ss)/exp(rb*max(ss)), rmod, adj=c(0,0.5), xpd=NA)
 ## alpha
 segments(0, 0, 1900, ra*1900, lty="dashed")
 text(2000, ra*2000, expression(alpha), adj=c(0.5,0.5))
-## MSY
-segments(rsy,0,rsy,ra*rsy/exp(rb*rsy), lty="dashed")
-text(rsy, 0,
-     expression(frac(1-italic(W)~bgroup("(",frac(italic(e),alpha),")"),beta)),
-     adj=c(0.5,1.1), xpd=NA)
-segments(par()$usr[1],ra*rsy/exp(rb*rsy),rsy,ra*rsy/exp(rb*rsy), lty="dashed")
-text(0, ra*rsy/exp(rb*rsy), expression(italic(R)[MSY]), pos=2, xpd=NA)
 ## K
 segments(0, log(ra)/rb, log(ra)/rb, log(ra)/rb, lty="dashed")
 segments(log(ra)/rb, 0, log(ra)/rb, log(ra)/rb, lty="dashed")
@@ -227,13 +217,13 @@ cnt <- 1
 
 \small
 
-`r fig_cap(cnt, caption = "Deterministic form of the Ricker model used in the analysis, including equations for carrying capacity ($K$) and the number of recruits corresponding to the maximum sustained yield ($R_{\\text{MSY}}$). The parameter $\\alpha$ defines the slope at the origin, the constant $e$ is Euler’s number, and $W$ is the Lambert function (see Scheuerell 2016 for details). The gray line is where $R_t = S_t$.", display = "full")` 
+`r fig_cap(cnt, caption = "Deterministic form of the Ricker model used in the analysis. The parameter $\\alpha$ is the slope at the origin and the derived parameter $K$ is the carrying capacity. The gray line is where $R_t = S_t$.", display = "full")` 
 
 \newpage
 
 ## Total population size
 
-```{r plot_run_size, fig.width = 7, fig.height = 4.5, out.extra = '', fig.pos = "H", fig.align="center"}
+```{r plot_run_size, fig.width = 7, fig.height = 4.5, fig.align="center"}
 clr <- rgb(0, 0, 255, alpha = 50, maxColorValue = 255)
 ## time seq
 t_idx_f <- seq(yr_frst, length.out = n_yrs+n_fore)
@@ -243,7 +233,8 @@ yp_max <- max(run_size)
 par(mai = c(1,1,0.1,0.1), omi = c(0.5,0.5,0.1,0.2))
 plot(t_idx_f, run_size[3,], ylim = c(yp_min,yp_max), type = "n",
      log = "y", xaxt = "n", yaxt = "n", bty = "L",
-     xlab = "Year", ylab = expression(Catch~+~Escapement~(10^3)), main = "", cex.lab = 1.2)
+     xlab = "Year", ylab = expression(Catch~+~Escapement~(10^3)),
+     main = "", cex.lab = 1.2)
 polygon(c(t_idx_f, rev(t_idx_f)), c(run_size[3,], rev(run_size[1,])),
         col = clr, border = NA)
 lines(t_idx_f, run_size[2,], col = "blue3", lwd = 2)
@@ -427,7 +418,7 @@ yp_max <- max(proc_err)
 ## plot
 par(mai = c(0.8,0.8,0.1,0.1), omi = c(0,0.2,0.1,0.2))
 plot(t_idx_a, proc_err[3,],
-     type = "n",  bty = "L", xaxt = "n",
+     type = "n",  bty = "L", xaxt = "n", las = 1,
      ylim = c(yp_min,yp_max),
      xlab = "Brood year", ylab = "Process error", main = "",
      cex.lab = 1.2)
