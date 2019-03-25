@@ -1,0 +1,93 @@
+---
+title: \Large{Development and application of an integrated population model for Chinook salmon in the Willamette River basin}
+output:
+  pdf_document:
+    includes:
+      before_body: before_body.tex
+    highlight: haddock
+    toc: true
+    number_sections: true
+    toc_depth: '3'
+fontsize: 11pt
+geometry: margin=1in
+---
+
+```{r set_options, echo = FALSE, message = FALSE}
+options(width = 100)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+\vspace{0.2in}
+
+This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
+
+# Summary
+
+
+# Introduction
+
+
+# Methods
+
+### Process component
+We begin with our process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults produce some number of surviving offspring, which follows a general Ricker model, such that
+	
+$$\log(R_t) = \log(S_t) + a_t \ – bS_t + w_t.$$
+	
+Here $R_t$ is the total number of subsequent recruits (offspring) born in year _t_; $S_t$ is the true, but unobserved, number of spawning adults; $a_t$ is the annual density-independent productivity; $b$ is the strength of density dependence; and $w_t$ is a process error representing environmental stochasticity, which is autocorrelated over time according to $w_t \sim \text{N}(\phi w_{t-1}, q_a)$.
+
+Previous applications of time-varying productivity [e.g., @peterman2003; @dorner2008] have used a Markov form where $a_t \sim \text{N}(a_{t-1}, \sigma_a)$, but we will model $(a_t)$ as a function of time-varying covariates. Specifically,
+
+$$a_t = \bar{a} + \sum_{i=1}^{M} c_{i,t} \ X_{i,t+h} $$
+
+Here $\bar{a}$ is the underlying mean productivity, and $c_{i,t}$ is the effect of covariate $i$ at time $t$, $X_{i,t+h}$. To allow for direct comparison of effect sizes, the covariates are typically standardized to have a zero mean and unit variance.
+
+The estimated number of fish of age $a$ returning in year $t$ $(N_{a,t})$ is then product of the total number of brood-year recruits in year $t – a$ and the proportion of mature fish from that brood year that returned to spawn at age $a$ $(p_{a,t-a})$, such that
+
+$$N_{a,t} = R_{t-a} \ p_{a,t-a}.$$
+
+The vector of age-specific return rates for brood year $t$ $(\mathbf{p}_t)$ has length $A$, which equals the number of adult age classes. That is, $\mathbf{p}_t$ is a combination of the probability of surviving to, and maturing in years $t + a_{\min}$ to $t + a_{\max}$. We modeled $(\mathbf{p}_t)$ as a random effect using a hierarchical form of the Dirichlet distribution, where
+
+$$\mathbf{p}_t \sim \text{Dirichlet}(\boldsymbol{\mu},\pi).$$
+
+In this formulation, the mean vector $\boldsymbol{\mu}$ is itself distributed as a Dirichlet, and therefore has a total of $A$ elements that are all greater than zero. The precision parameter $\pi$ affects each of the elements in $\boldsymbol{\mu}$, such that large values of $\pi$ results in values of $\mathbf{p}_t$ that are very close to $\boldsymbol{\mu}$.
+
+### Observation component
+
+Estimates of the number of spawning adults necessarily contain some sampling or observation errors due to incomplete censuses, mis-identification, etc. Therefore, we will assume that the estimates of escapement $(E_t)$ are log-normally distributed about the true number of spawners $(S_t)$
+
+$$\log(E_t) \sim \text{Normal}\left(\log(S_t), r_s\right).$$
+
+We do not have the ability to estimate the observation variances for both the escapement and harvest without any additional prior information. Therefore, we will assume the harvest is recorded without error and calculate $S_t$ as the difference between the estimated total run size $(N_t)$ and harvest $(H_t)$
+
+$$S_t = N_t - H_t.$$
+
+and $N_t$ is the sum of $N_{a,t}$ over all age classes.
+
+The age composition data include the number of fish in each age class $a$ in year $t$ $(O_{a,t})$. The age data are then modeled as a multinomial process with order $Y_t$ and proportion vector $\mathbf{d}_t$, such that
+
+$$\mathbf{O}_t \sim \text{Multinomial}(Y_t, \mathbf{d}_t).$$
+
+The order of the multinomial is simply the sum of the observed numbers of fish across all ages returning in year $t$:
+
+$$Y_t = \sum_{a=a_{\min}}^{a_{\max}} O_{a,t}$$
+
+The proportion vector $\mathbf{d}_t$ for the multinomial is based on the age-specific, model-derived estimates of adult returns in year $t$ $(N_{a,t})$, such that
+
+$$d_{a,t} = {N_{a,t} \over \displaystyle \sum_{a=a_{\min}}^{a_{\max}} N_{a,t}}.$$
+
+I used the [R software](https://cran.r-project.org/) (v3.2.3) for data retrieval, data processing, and summarizing model results, and the [JAGS software](http://mcmc-jags.sourceforge.net/) (v4.2.0) for Markov chain Monte Carlo (MCMC) simulation. 
+
+
+# Results
+
+
+# Discussion
+
+
+# Acknowledgments
+
+
+# References
+
+
