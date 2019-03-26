@@ -233,13 +233,17 @@ cnt <- 1
 
 ## Total population size
 
-```{r plot_run_size, fig.width = 7, fig.height = 4.5, fig.align="center"}
+```{r plot_run_size, fig.width = 7, fig.height = 4, fig.align="center"}
 clr <- rgb(0, 0, 255, alpha = 50, maxColorValue = 255)
 ## time seq
 t_idx_f <- seq(yr_frst, length.out = n_yrs+n_fore)
 ## plot
 yp_min <- min(run_size)
 yp_max <- max(run_size)
+
+png(file.path(figsdir, "Fig_2_popn_size.png"),
+     height = 4, width = 7, units = "in", res = 500)
+
 par(mai = c(1,1,0.1,0.1), omi = c(0.5,0.5,0.1,0.2))
 plot(t_idx_f, run_size[3,], ylim = c(yp_min,yp_max), type = "n",
      log = "y", xaxt = "n", yaxt = "n", bty = "L",
@@ -252,13 +256,19 @@ points(cbind(t_idx_f, exp(ln_dat_esc) + dat_harv), pch = 16, cex = 1)
 axis(1, at = seq(2000, 2015, 3))
 axis(2, at = c(5000, 10000, 20000, 40000),
      labels = c(c(5, 10, 20, 40)), las = 1)
+
+dev.off()
 ```
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
 ```
 
-\small
+\newpage
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_2_popn_size}
+\end{center}
 
 `r fig_cap(cnt, caption = "Time series of the estimated total population size (catch plus escapement). The observed data are the points; the solid line is the median estimate of the true number of spawners and the shaded region indicates the 95% credible interval.", display = "full")`
 
@@ -267,6 +277,9 @@ cnt <- cnt + 1
 ## Spawner-recruit relationship
 
 ```{r plot_S_R, fig.width = 7, fig.height = 4.5, fig.pos = "placeHere", fig.align="center"}
+png(file.path(figsdir, "Fig_3_SR.png"),
+     height = 4.5, width = 7, units = "in", res = 500)
+
 layout(matrix(c(1,1,2,3),2,2),c(3,2),c(1,1))
 xoffSet <- 0.05
 yoffSet <- 0.03
@@ -277,10 +290,11 @@ clr <- rgb(100, 0, 200,
                        length.out = age_max-age_min+n_fore),
            maxColorValue = 255)
 
-## empty plot space for spawner-recruit relationships
 dd <- 3000
 yM <- Re2prec(max(r_dat), "ceiling", dd)
 xM <- Re2prec(max(s_dat), "ceiling", dd)
+
+## empty plot space for spawner-recruit relationships
 par(mai = c(0.8,0.8,0.1,0.1), omi = c(0,0,0,0))
 plot(s_dat[2,], r_dat[2,], xlim = c(0,xM), ylim = c(0,yM), type = "n",
      xaxs = "i", yaxs = "i", cex.lab = 1.2,
@@ -354,13 +368,19 @@ mtext(expression(paste("Carrying capacity (",italic(K),", ",10^3,")")),
 text(x = par()$usr[1], 
      y = par()$usr[4] * 1.05,
      "(c)", xpd=NA)
+
+dev.off()
 ```
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
 ```
 
-\small
+\newpage
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_3_SR}
+\end{center}
 
 `r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming median values for the flow covariate (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. The black line in (a) shows the expected relationship based on the median flow value over all years; gray lines indicate the 2.5$^\\text{th}$ and 97.5$^\\text{th}$ credible intervals. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles.", display = "full")`
 
@@ -377,6 +397,9 @@ c_est <- mod_res[,grep("gamma", colnames(mod_res))] * 1000
 ylN <- Re2prec(min(c_est), "floor", 0.02)
 ylM <- Re2prec(max(c_est), "ceiling", 0.02)
 brks <- seq(ylN,ylM, length.out = diff(c(ylN,ylM))*400+1)
+
+png(file.path(figsdir, "Fig_4_covar_effects.png"),
+     height = 3.5, width = 7, units = "in", res = 500)
 
 par(mfrow=c(1,2), mai=c(0.4,0.4,0.1,0.1), omi=c(0.5,0.5,0,0))
 
@@ -403,13 +426,19 @@ text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
      y = par()$usr[4] - diff(par()$usr[3:4]) * yoffSet,
      "(b)")
 mtext(side = 1,expression(Effect~size~(10^{-3}~cfs)), line = 3, cex = 1.2)
+
+dev.off()
 ```
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
 ```
 
-\small
+\newpage
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_4_covar_effects}
+\end{center}
 
 `r fig_cap(cnt, caption = "Time series of the range of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
@@ -425,6 +454,10 @@ proc_err <- mod_res[, grep("res_ln_Rec", colnames(mod_res))]
 proc_err <- apply(proc_err, 2, quantile, CI_vec)
 yp_min <- min(proc_err)
 yp_max <- max(proc_err)
+
+png(file.path(figsdir, "Fig_5_proc_errs.png"),
+     height = 4, width = 7, units = "in", res = 500)
+
 ## plot
 par(mai = c(0.8,0.8,0.1,0.1), omi = c(0,0.2,0.1,0.2))
 plot(t_idx_a, proc_err[3,],
@@ -437,13 +470,19 @@ polygon(c(t_idx_a, rev(t_idx_a)), c(proc_err[3,], rev(proc_err[1,])),
         col = clr, border = NA)
 lines(t_idx_a, proc_err[2,], col = "blue3", lwd = 2)
 axis(1, at = seq(2000, 2015, 3))
+
+dev.off()
 ```
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
 ```
 
-\small
+\newpage
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_5_proc_errs}
+\end{center}
 
 `r fig_cap(cnt, caption = "Time series of the estimated process errors, which represent the population's productivity after accounting for the effects of density dependence and environmental covariates. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
 
