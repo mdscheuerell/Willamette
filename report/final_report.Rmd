@@ -98,10 +98,10 @@ cnt <- 1
 
 ## Observation models
 
-Estimates of the number of spawning adults necessarily contain some sampling or observation errors due to incomplete censuses, mis-identification, etc. Therefore, we will assume that the estimates of escapement $(E_t)$ are log-normally distributed about the true number of spawners $(S_t)$
+Estimates of the number of spawning adults necessarily contain some sampling or observation errors due to incomplete censuses, mis-identification, etc. Therefore, we will assume that the estimates of escapement $(E_t)$ are log-normally distributed about the true number of spawners $(S_t)$, such that
 
 \begin{equation}
-\log(E_t) \sim \text{Normal}\left(\log(S_t), r_s\right).
+\log(E_t) \sim \text{Normal}(\log(S_t), r_s).
 \end{equation}
 
 We do not have the ability to estimate the observation variances for both the escapement and harvest without any additional prior information. Therefore, we will assume the harvest is recorded without error and calculate $S_t$ as the difference between the estimated total run size $(N_t)$ and harvest $(H_t)$
@@ -133,9 +133,9 @@ d_{a,t} = {N_{a,t} \over \displaystyle \sum_{a=a_{\min}}^{a_{\max}} N_{a,t}}.
 
 ## Model fitting
 
-I used Bayesian inference to estimate all model parameters and the unobserved true numbers of spawners and recruits over time. I used version 3.5 of the __R__ [@R2018] for data retrieval, data processing, and summarizing model results, and version 4.2 of the JAGS software [@jags] for Markov chain Monte Carlo (MCMC) simulation. Specifically, I used 4 chains with $1.3 \times 10^5$ iterations each. Following a burn-in period of $5 \times 10^4$, I retained every 100^th^ sample for a total of 5000 samples from the posterior distributions.
+I used Bayesian inference to estimate all model parameters and the unobserved true numbers of spawners and recruits over time. I used version 3.5 of the __R__ [@R2018] for data retrieval, data processing, and summarizing model results, and version 4.2 of the __JAGS__ software [@jags] for Markov chain Monte Carlo (MCMC) simulation. Specifically, I used 4 chains with $1.3 \times 10^5$ iterations each. Following a burn-in period of $5 \times 10^4$, I retained every 100^th^ sample for a total of 5000 samples from the posterior distributions.
 
-I assessed convergence and diagnostic statistics via the CODA package in R [@plummer2006]. Specifically, I used visual inspection of trace plots and density plots, and verified that Gelman and Rubin’s [-@GR1992] potential scale reduction factor was less than 1.1, to ensure adequate chain mixing and parameter convergence. I evaluated the out-of-sample predictive ability of each model using the leave-one-out information criterion (LOOIC) as estimated via the __loo__ package for __R__ [@vehtari2017].
+I assessed convergence and diagnostic statistics via the __CODA__ package in __R__ [@plummer2006]. Specifically, I used visual inspection of trace plots and density plots, and verified that Gelman and Rubin’s [-@GR1992] potential scale reduction factor was less than 1.1, to ensure adequate chain mixing and parameter convergence. I evaluated the out-of-sample predictive ability of each model using the leave-one-out information criterion (LOOIC) as estimated via the __loo__ package for __R__ [@vehtari2017].
 
 
 # Results
