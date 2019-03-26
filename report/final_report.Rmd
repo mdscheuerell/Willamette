@@ -43,21 +43,28 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 # Methods
 
 ## Process models
-We begin with our process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults produce some number of surviving offspring, which follows a general Ricker model, such that
+
+We begin with our process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults produce some number of surviving offspring, which follows a general Ricker model (Figure 1), such that
 	
+\begin{equation}
+R_t = \frac{\alpha S_t}{e^{b S_t}} e^{w_t}.
+\end{equation}
+
+Here $R_t$ is the total number of subsequent recruits (offspring) born in year _t_; $S_t$ is the true, but unobserved, number of spawning adults; $\alpha$ is the intrinsic productivity; $b$ is the strength of density dependence; and $w_t$ is a process error representing environmental stochasticity.
+
+In this case, however, we want the intrinsic productivity to vary over time, such that the model becomes (in log-space)
+
 \begin{equation}
 \log(R_t) = \log(S_t) + a_t - bS_t + w_t.
 \end{equation}
 
-Here $R_t$ is the total number of subsequent recruits (offspring) born in year _t_; $S_t$ is the true, but unobserved, number of spawning adults; $a_t$ is the annual density-independent productivity; $b$ is the strength of density dependence; and $w_t$ is a process error representing environmental stochasticity, which is autocorrelated over time according to $w_t \sim \text{N}(\phi w_{t-1}, q_a)$.
-
-Previous applications of time-varying productivity [e.g., @peterman2003; @dorner2008] have used a Markov form where $a_t \sim \text{N}(a_{t-1}, \sigma_a)$, but we will model $(a_t)$ as a function of time-varying covariates. Specifically,
+Here $a_t$ is the log of the annual density-independent productivity and $w_t$ is autocorrelated over time according to $w_t \sim \text{N}(\phi w_{t-1}, q_a)$. Previous applications of time-varying productivity [e.g., @peterman2003; @dorner2008] have used a Markov form where $a_t \sim \text{N}(a_{t-1}, \sigma_a)$, but here we will model $a_t$ as a function of time-varying covariates. Specifically,
 
 \begin{equation}
-a_t = \bar{a} + \sum_{i=1}^{M} c_{i,t} \ X_{i,t+h}
+a_t = \bar{a} + \sum_{i=1}^{M} c_{i,t} \ X_{i,t+h},
 \end{equation}
 
-Here $\bar{a}$ is the underlying mean productivity, and $c_{i,t}$ is the effect of covariate $i$ at time $t$, $X_{i,t+h}$. To allow for direct comparison of effect sizes, the covariates are typically standardized to have a zero mean and unit variance.
+$\bar{a}$ is the underlying mean productivity, and $c_{i,t}$ is the effect of covariate $i$ at time $t$, $X_{i,t+h}$. To allow for direct comparison of effect sizes, the covariates are typically standardized to have a zero mean and unit variance.
 
 The estimated number of fish of age $a$ returning in year $t$ $(N_{a,t})$ is then product of the total number of brood-year recruits in year $t - a$ and the proportion of mature fish from that brood year that returned to spawn at age $a$ $(p_{a,t-a})$, such that
 
@@ -73,6 +80,8 @@ The vector of age-specific return rates for brood year $t$ $(\mathbf{p}_t)$ has 
 
 In this formulation, the mean vector $\boldsymbol{\mu}$ is itself distributed as a Dirichlet, and therefore has a total of $A$ elements that are all greater than zero. The precision parameter $\pi$ affects each of the elements in $\boldsymbol{\mu}$, such that large values of $\pi$ results in values of $\mathbf{p}_t$ that are very close to $\boldsymbol{\mu}$.
 
+\vspace{0.25in}
+
 \begin{center}
 \includegraphics[width=0.6\textwidth]{figures/Fig_1_Ricker_form}
 \end{center}
@@ -80,7 +89,6 @@ In this formulation, the mean vector $\boldsymbol{\mu}$ is itself distributed as
 ```{r, echo=FALSE}
 cnt <- 1
 ```
-
 
 \small
 
