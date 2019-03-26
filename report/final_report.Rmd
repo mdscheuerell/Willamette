@@ -12,6 +12,8 @@ fontsize: 11pt
 geometry: margin=1in
 bibliography: willamette.bib
 csl: jpe.csl
+header-includes:
+  \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
 ---
 
 ```{r set_options, echo = FALSE, message = FALSE}
@@ -105,6 +107,10 @@ I used the [R software](https://cran.r-project.org/) (v3.2.3) for data retrieval
 
 
 # Results
+
+
+\includegraphics[width=\textwidth]{figures/Fig_1_Ricker_form}
+
 
 
 # Discussion
