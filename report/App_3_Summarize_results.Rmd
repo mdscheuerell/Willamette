@@ -45,6 +45,7 @@ if(!require("here")) {
 ## set directory locations
 datadir <- here("data")
 jagsdir <- here("jags")
+figsdir <- here("report/figures")
 ## for reading csv
 if(!require("readr")) {
   install.packages("readr")
@@ -179,7 +180,7 @@ K_est[K_est > 24] <- 24
 
 ## Deterministic Ricker model
 
-```{r model_forms, fig.height=4, fig.width=4, fig.pos="placeHere", fig.align="center"}
+```{r model_forms, fig.height=4, fig.width=4, fig.pos="placeHere", fig.align="center", message=FALSE}
 ## params
 ra <- 3
 rb <- 1.2e-4
@@ -189,6 +190,9 @@ rb <- 1.2e-4
 ss <- seq(0,1.2e4,10)
 ## recruits
 rr <- ra*ss/exp(rb*ss)
+
+png(file.path(figsdir, "Fig_1_Ricker_form.png"),
+     height = 4, width = 4, units = "in", res = 500)
 
 par(mai=c(0.8,0.6,0.2,0.2), omi=c(0,0,0,0.25))
 plot(ss, rr, type="n", xlim=range(ss), ylim=range(ss), xaxs="i", yaxs="i",
@@ -209,13 +213,19 @@ segments(0, log(ra)/rb, log(ra)/rb, log(ra)/rb, lty="dashed")
 segments(log(ra)/rb, 0, log(ra)/rb, log(ra)/rb, lty="dashed")
 text(log(ra)/rb, 0, expression(frac(log(alpha),beta)), adj=c(0.5,1.2), xpd=NA)
 text(0, log(ra)/rb, expression(italic(K)), pos=2, xpd=NA)
+
+dev.off()
 ```
 
 ```{r, echo=FALSE}
 cnt <- 1
 ```
 
-\small
+\newpage
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{figures/Fig_1_Ricker_form}
+\end{center}
 
 `r fig_cap(cnt, caption = "Deterministic form of the Ricker model used in the analysis. The parameter $\\alpha$ is the slope at the origin and the derived parameter $K$ is the carrying capacity. The gray line is where $R_t = S_t$.", display = "full")` 
 
