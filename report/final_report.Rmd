@@ -47,6 +47,13 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 ## Fish data
 
+I obtained estimates of the number of spawning Chinook salmon and their age composition for calendar years 1999-2017 from the Oregon Department of Fish and Wildlife (T. Friesen and M. Lewis, _pers. comm._). Details on the sampling methodology and extrapolation to total counts can be found elsewhere. Because the numbers of spawning adults are estimates and not exhaustive counts, I used an observation model to account for their uncertainty (see below).
+
+Adult Chinook salmon in the Willamette River basin return at ages 3 through 6. Importantly, the model described below relies on the actual number of adult fish in each age class in each year, rather than the more typically reported proportion-by-age. The median number of observed fish of ages 3, 4, 5, and 6 was 21, 231, 199, and 7, respectively. As with the spawner data, the incomplete census of ages required an observation model to account for their uncertainty (see below).
+
+Here I assume the harvest of natural-orgin adults to be zero due to legal restrictions on retaining them in the sport fishery. Nevertheless, estimates do not account for errors in reporting by anglers (_e.g._, incorrect species, wrong area code) or concerted illegal harvest. Additionally, estimates of catch do not account for any possible incidental impacts on wild fish in mixed-stock fisheries directed at hatchery fish. Thus, estimates of recruitment will be biased downward to the extent that natural-origin fish were retained in a fishery.
+
+Due to difficulties in assessing whether or not fish of specific age were of natural or hathery origin, I only consider the production of natural-origin fish by natural-origin parents. Thus, estimates of recruitment will be biased upward to the extent that hatchery-origin spawners contribute to natural production.
 
 ## Flow covariates
 
@@ -155,7 +162,9 @@ I used Bayesian inference to estimate all model parameters and the unobserved tr
 
 I assessed convergence and diagnostic statistics via the __CODA__ package in __R__ [@plummer2006]. Specifically, I used visual inspection of trace plots and density plots, and verified that Gelman and Rubin’s [-@GR1992] potential scale reduction factor was less than 1.1, to ensure adequate chain mixing and parameter convergence.
 
-I evaluated the out-of-sample prediction accuracy for each model via leave-one-out cross-validation (LOO) as estimated in the __loo__ package for __R__ [@loo_pkg]. LOO is more appropriate for Bayesian model selection than the more common deviance information criterion (DIC), especially for hierarchical models such as that used here [@vehtari2017]. Traditionally, differences in DIC are considered fixed and known, but the estimation of the LOO information criterion (LOOIC) allows one to evaluate its uncertainty. That is, point-estimates of the difference between any two models may suggest a real difference in their prediction accuracy, but the standard errors of the LOOIC values may be large enough to preclude any conclusion about which of the models is superior. 
+I evaluated the out-of-sample prediction accuracy for each model via leave-one-out cross-validation (LOO) as estimated in the __loo__ package for __R__ [@loo_pkg]. LOO is more appropriate for Bayesian model selection than the more common deviance information criterion (DIC), especially for hierarchical models such as that used here [@vehtari2017]. Traditionally, differences in DIC are considered fixed and known, but the estimation of the LOO information criterion (LOOIC) allows one to evaluate its uncertainty. That is, point-estimates of the difference between any two models may suggest a real difference in their prediction accuracy, but the standard errors of the LOOIC values may be large enough to preclude any conclusion about which of the models is superior.
+
+Appendix S2 contains a detailed workflow that will allow anyone to reproduce the model fitting and evaluation phases. Appendix S3 contains all of the code to replicate the figures in this report.
 
 # Results
 
