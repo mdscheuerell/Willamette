@@ -13,6 +13,15 @@ geometry: margin=1in
 ```{r set_options, echo = FALSE, message = FALSE}
 options(width = 100)
 knitr::opts_chunk$set(message = FALSE)
+def_chunk_hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def_chunk_hook(x, options)
+  ifelse(options$size != "normalsize",
+         ## TRUE
+         paste0("\\", options$size,"\n\n", x, "\n\n \\normalsize"),
+         ## FALSE
+         x)
+})
 ```
 
 \vspace{0.2in}
@@ -21,9 +30,9 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 # Background
 
-This appendix describes how to retrieve the environmental covariates used in our analyses. After reading in the raw data, summarizing them , and trimming them to the appropriate time frame, they table of covariates is written to a `.csv` file.
+This appendix describes how to retrieve the environmental covariates used in the analyses, and summarize them over the appropriate months and years. After reading in the raw data, summarizing them, and trimming them to the appropriate time frame, the table of covariates is written to a `.csv` file.
 
-All of the analyses require the [R software](https://cran.r-project.org/) (v3.4.3 or later) for data retrieval and processing. We also need several packages that are not included with the base installation of __R__.
+All of the analyses require the [R software](https://cran.r-project.org/) (v3.5 or later) for data retrieval and processing. You will also need several packages that are not included with the base installation of __R__.
 
 ```{r load_pkgs, message=FALSE, warning=FALSE}
 if(!require("here")) {
