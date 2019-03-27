@@ -45,6 +45,15 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 # Methods
 
+## Fish data
+
+
+## Flow covariates
+
+Many of the covariates were highly correlated (Figure S1).
+
+Please see Appendix S1 for a detailed workflow describing the retrieval and summarization of the flow covariates.
+
 ## Process models
 
 ### Total recruits
@@ -193,6 +202,7 @@ knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
 
 # Acknowledgments {-}
 
+I thank Eric Buhle for helpful discussions about model development. I also thank Tyrell DeWeber and Jim Peterson (USGS Oregon Cooperative Fish and Wildlife Research Unit), Rich Piaskowski (USACE), and the other members of the Science of Willamette Instream Flows Team (SWIFT) for constructive comments on our analyses. Tom Friesen, Mark Lewis and others at ODFW were invaluable in assembling the data.
 
 # References {-}  
 
