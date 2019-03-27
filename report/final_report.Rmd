@@ -115,11 +115,7 @@ In this formulation, the mean vector $\boldsymbol{\mu}$ is itself distributed as
 cnt <- 1
 ```
 
-\small
-
 `r fig_cap(cnt, caption = "Deterministic form of the Ricker model used in the analysis. The parameter $\\alpha$ is the slope at the origin and the derived parameter $K$ is the carrying capacity. The gray line is where $R_t = S_t$.", display = "full")` 
-
-\normalsize
 
 ## Observation models
 
@@ -211,11 +207,15 @@ knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
 # Discussion
 
 
-# Acknowledgments {-}
+\Large\textbf{Acknowledgments}
+
+\normalsize
 
 I thank Eric Buhle for helpful discussions about model development. I also thank Tyrell DeWeber and Jim Peterson (USGS Oregon Cooperative Fish and Wildlife Research Unit), Rich Piaskowski (USACE), and the other members of the Science of Willamette Instream Flows Team (SWIFT) for constructive comments on our analyses. Tom Friesen, Mark Lewis and others at ODFW were invaluable in assembling the data.
 
-# References {-}  
+\vspace{0.25in}
+
+# References
 
 \setlength{\parindent}{-0.375in}
 \setlength{\leftskip}{0.375in}
