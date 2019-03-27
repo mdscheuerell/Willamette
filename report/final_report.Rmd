@@ -44,6 +44,8 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 ## Process models
 
+### Total recruits
+
 We begin with our process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults produce some number of surviving offspring, which follows a general Ricker model (Figure 1), such that
 	
 \begin{equation}
@@ -66,13 +68,15 @@ a_t = \bar{a} + \sum_{i=1}^{M} c_{i,t} \ X_{i,t+h},
 
 $\bar{a}$ is the underlying mean productivity, and $c_{i,t}$ is the effect of covariate $i$ at time $t$, $X_{i,t+h}$. To allow for direct comparison of effect sizes, the covariates are typically standardized to have a zero mean and unit variance.
 
+### Age-specific survival & maturation
+
 The estimated number of fish of age $a$ returning in year $t$ $(N_{a,t})$ is then product of the total number of brood-year recruits in year $t - a$ and the proportion of mature fish from that brood year that returned to spawn at age $a$ $(p_{a,t-a})$, such that
 
 \begin{equation}
 N_{a,t} = R_{t-a} \ p_{a,t-a}.
 \end{equation}
 
-The vector of age-specific return rates for brood year $t$ $(\mathbf{p}_t)$ has length $A$, which equals the number of adult age classes. That is, $\mathbf{p}_t$ is a combination of the probability of surviving to, and maturing in years $t + a_{\min}$ to $t + a_{\max}$. We modeled $(\mathbf{p}_t)$ as a random effect using a hierarchical form of the Dirichlet distribution, where
+The vector of age-specific return rates for brood year $t$ $(\mathbf{p}_t)$ has length $A$, which equals the number of adult age classes. That is, $\mathbf{p}_t$ is a combination of the probability of surviving to, and maturing in years $t + a_{\min}$ to $t + a_{\max}$ (_i.e._, $t + 3$ to $t + 6$). We modeled $(\mathbf{p}_t)$ as a random effect using a hierarchical form of the Dirichlet distribution, where
 
 \begin{equation}
 \mathbf{p}_t \sim \text{Dirichlet}(\boldsymbol{\mu},\pi).
@@ -98,36 +102,38 @@ cnt <- 1
 
 ## Observation models
 
-Estimates of the number of spawning adults necessarily contain some sampling or observation errors due to incomplete censuses, mis-identification, etc. Therefore, we will assume that the estimates of escapement $(E_t)$ are log-normally distributed about the true number of spawners $(S_t)$, such that
+### Spawners
+
+Estimates of the number of spawning adults necessarily contain some sampling or observation errors due to incomplete censuses, mis-identification, etc. Therefore, I assume that the estimates of escapement $(E_t)$ are log-normally distributed about the true number of spawners $(S_t)$, such that
 
 \begin{equation}
 \log(E_t) \sim \text{Normal}(\log(S_t), r_s).
 \end{equation}
 
-We do not have the ability to estimate the observation variances for both the escapement and harvest without any additional prior information. Therefore, we will assume the harvest is recorded without error and calculate $S_t$ as the difference between the estimated total run size $(N_t)$ and harvest $(H_t)$
+There is no harvest of natural-origin fish within the freshwater portion of the basin, so the total number of spawners equals the sum of the age-specific totals, such that
 
 \begin{equation}
-S_t = N_t - H_t.
+S_t = \sum_{a=3}^6 N_{a,t}.
 \end{equation}
 
-and $N_t$ is the sum of $N_{a,t}$ over all age classes.
+### Age composition
 
-The age composition data include the number of fish in each age class $a$ in year $t$ $(O_{a,t})$. The age data are then modeled as a multinomial process with order $Y_t$ and proportion vector $\mathbf{d}_t$, such that
+The age composition data include the number of fish in each age class $a$ in year $t$ $(O_{a,t})$. The vector of age data $\mathbf{O}_t = [O_{3,t} ~ O_{4,t} ~ O_{5,t} ~ O_{6,t}]$ is then modeled as a multinomial process with order $Y_t$ and proportion vector $\mathbf{d}_t = [d_{3,t} ~ d_{4,t} ~ d_{5,t} ~ d_{6,t}]$, such that
 
 \begin{equation}
 \mathbf{O}_t \sim \text{Multinomial}(Y_t, \mathbf{d}_t).
 \end{equation}
 
-The order of the multinomial is simply the sum of the observed numbers of fish across all ages returning in year $t$:
+The order of the multinomial is simply the sum of the observed numbers of fish across all ages returning in year $t$
 
 \begin{equation}
-Y_t = \sum_{a=a_{\min}}^{a_{\max}} O_{a,t}
+Y_t = \sum_{a=3}^6 O_{a,t}.
 \end{equation}
 
-The proportion vector $\mathbf{d}_t$ for the multinomial is based on the age-specific, model-derived estimates of adult returns in year $t$ $(N_{a,t})$, such that
+The proportion vector $\mathbf{d}_t$ for the multinomial is based on the age-specific, model-derived estimates of adult returns in year $t$ $(N_{a,t})$ and the true number of total spawners $(S_t)$, such that
 
 \begin{equation}
-d_{a,t} = {N_{a,t} \over \displaystyle \sum_{a=a_{\min}}^{a_{\max}} N_{a,t}}.
+d_{a,t} = \frac{N_{a,t}}{S_t}.
 \end{equation}
 
 
