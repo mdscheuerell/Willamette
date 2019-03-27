@@ -20,12 +20,15 @@ header-includes:
 options(width = 100)
 knitr::opts_chunk$set(message = FALSE)
 ## for figure captions
-if(!require("captioner")) {
-  devtools::install_github("adletaw/captioner")
-  library("captioner")
-}
+library("captioner")
 ## set default caption options
 fig_cap <- captioner(suffix = ".", style = "b", style_prefix = TRUE)
+tbl_cap <- captioner(prefix = "Table", suffix = ".",
+                     style = "b", style_prefix = TRUE)
+## for tables
+library(kableExtra)
+## jags dir
+jagsdir <- here::here("jags")
 ```
 
 \vspace{0.2in}
@@ -146,6 +149,36 @@ I assessed convergence and diagnostic statistics via the __CODA__ package in __R
 
 # Results
 
+## Model selection
+
+\small
+
+`r tbl_cap(1, caption = "Table of model selection results with models ranked from greatest to least data support. Columns correspond to the life stage at which the flow effect would be expected to manifest itself (Life stage); the statistic used to summarize flow (Stat); the beginning and ending dates over which the flow was summarized expressed as month-day (Begin, End); the number of years by which the flow covariate was lagged relative to the brood year (Lag); the number of effective parameters $(p_e)$; the leave-one-out information criterion (LOOIC) and its standard error (se LOOIC); and the difference in LOOIC among models ($\\Delta$LOOIC). The model where \"Life stage = base\" does not contain any effect of flow.", display = "full")` 
+
+\normalsize
+
+```{r, echo = FALSE}
+## load LOOIC info
+tbl_LOOIC <- readRDS(file.path(jagsdir, "tbl_LOOIC.rds"))
+tbl_LOOIC <- tbl_LOOIC[,!(names(tbl_LOOIC) %in% "se_p_loo")]
+## print table
+knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
+             format = "latex",
+             booktabs = TRUE,
+             col.names = c("Life stage",
+                           "Stat",
+                           "Begin",
+                           "End",
+                           "Lag",
+                           "$p_e$",
+                           "LOOIC",
+                           "se LOOIC",
+                           "$\\Delta$LOOIC"),
+             escape = FALSE,
+             row.names = FALSE,
+             align = c("l", rep("c", 8))) %>%
+  kable_styling(position = "center", font_size = 10)
+```
 
 
 
