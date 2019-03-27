@@ -721,6 +721,7 @@ tbl_LOOIC <- data.frame(life_stage = c("base", cov_meta$life_stage),
                         end = c("NA", cov_meta$end),
                         lag = c(NA, cov_meta$lag_1),
                         tbl_LOOIC)
+saveRDS(tbl_LOOIC, file.path(jagsdir, "tbl_LOOIC.rds"))
 ## best model; need to subtract 1 from index to acct for base model
 best_i <- which(tbl_LOOIC[,"looic"] == min(tbl_LOOIC[,"looic"])) - 1
 best_fit <- readRDS(file.path(jagsdir, paste0("fit_ricker_cov_", best_i, ".rds")))
