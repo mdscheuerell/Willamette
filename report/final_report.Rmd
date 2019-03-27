@@ -47,18 +47,18 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 We begin with our process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults produce some number of surviving offspring, which follows a general Ricker model (Figure 1), such that
 	
 \begin{equation}
-R_t = \frac{\alpha S_t}{e^{b S_t}} e^{w_t}.
+R_t = \frac{\alpha S_t}{\mathrm{e}^{\beta S_t}}.
 \end{equation}
 
-Here $R_t$ is the total number of subsequent recruits (offspring) born in year _t_; $S_t$ is the true, but unobserved, number of spawning adults; $\alpha$ is the intrinsic productivity; $b$ is the strength of density dependence; and $w_t$ is a process error representing environmental stochasticity.
+Here $R_t$ is the total number of subsequent recruits (offspring) born in year _t_; $S_t$ is the true, but unobserved, number of spawning adults; $\alpha$ is the intrinsic productivity; and $\beta$ is the strength of density dependence.
 
-In this case, however, we want the intrinsic productivity to vary over time, such that the model becomes (in log-space)
+In this case, however, I make two modifications to Eqn (1): _i_) allow the intrinsic productivity to vary over time, and _ii_) allow for additional unexplained annual variation. Specifically, the model becomes (in log-space)
 
 \begin{equation}
-\log(R_t) = \log(S_t) + a_t - bS_t + w_t.
+\log(R_t) = \log(S_t) + a_t - b S_t + w_t.
 \end{equation}
 
-Here $a_t$ is the log of the annual density-independent productivity and $w_t$ is autocorrelated over time according to $w_t \sim \text{N}(\phi w_{t-1}, q_a)$. Previous applications of time-varying productivity [e.g., @peterman2003; @dorner2008] have used a Markov form where $a_t \sim \text{N}(a_{t-1}, \sigma_a)$, but here we will model $a_t$ as a function of time-varying covariates. Specifically,
+Here $a_t$ is the log of the annual density-independent productivity ($a = \log \alpha$), $b = \beta$ and $w_t$ is autocorrelated over time according to $w_t \sim \text{N}(\phi w_{t-1}, q_a)$. Previous applications of time-varying productivity [e.g., @peterman2003; @dorner2008] have used a Markov form where $a_t \sim \text{N}(a_{t-1}, \sigma_a)$, but here we will model $a_t$ as a function of time-varying covariates. Specifically,
 
 \begin{equation}
 a_t = \bar{a} + \sum_{i=1}^{M} c_{i,t} \ X_{i,t+h},
