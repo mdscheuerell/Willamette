@@ -57,9 +57,11 @@ Due to difficulties in assessing whether or not fish of specific age were of nat
 
 ## Flow covariates
 
-Many of the covariates were highly correlated (Figure S1).
+During a series of workshops, the Science of Willamette Instream Flows Team (SWIFT) developed a set of possible flow covariates to include in the model as possible drivers of productivity. The set included summaries of river flows over different months and year that were focused on a specific life stage (_e.g._, minimum flows from July through September might affect the survival of parr). 
 
-Please see Appendix S1 for a detailed workflow describing the retrieval and summarization of the flow covariates.
+Specifically, I retrieved the raw flow data, as measured at Salem, OR, from the US Geological Service National Water Information System using the __EGRET__ package for __R__ [@egret]. I then summarized the data according to each of the specific flow metrics. Please see Appendix S1 for a detailed workflow describing the retrieval and summarization of the flow covariates.
+
+Importantly, many of the covariates were highly correlated due to the nature of the statistics used to summarized them (_e.g._, min/max/range) and the time periods over which they were calculated (Figure S1). Thus, I included only one covariate in the model at a time to prevent problems from collinearity. Accordingly, one should expect that estimates of the parameters and states from models with closely related flow metrics should be quie similar.
 
 ## Process models
 
