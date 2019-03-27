@@ -203,7 +203,7 @@ mtext(expression(italic(R[t])), 2, line=0.5, cex=1.1, at=max(ss), las=1)
 abline(a=0, b=1, col="gray")
 ## R-S
 lines(ss, rr, lwd=2)
-rmod <- expression(frac(italic(alpha * S[t]),italic(e^{beta * S[t]})))
+rmod <- expression(frac(italic(alpha * S[t]),e^italic({beta * S[t]})))
 text(12300, ra*max(ss)/exp(rb*max(ss)), rmod, adj=c(0,0.5), xpd=NA)
 ## alpha
 segments(0, 0, 1900, ra*1900, lty="dashed")
