@@ -180,6 +180,8 @@ Appendix S2 contains a detailed workflow that will allow anyone to reproduce the
 
 The model incorporating flow during the smolt outmigration period had the most data support and lowest LOOIC (Table 1), so the following results are based on that model. However, the relative large standard errors in the model-specific LOOIC values indicates very little difference in the predictive accuracy among the various models. That said, there is some evidence suggesting that the models with flow covariates offer an improvement in predictive accuracy over the base model containing no flow covariate. 
 
+## Population size
+
 Estimates of the total population size of spawners over time agreed quite well with the observed data; all of the observations fell within the 95% credible intervals (Figure 2). There was a notable decrease in spawner abundance from 2003 to 2008; the number of spawners during the five years from 1999-2003 was 2-3 times greater than during the period from 2004-2017.
 
 ```{r, echo=FALSE}
@@ -206,7 +208,9 @@ cnt <- cnt + 1
 
 \vspace{0.25in}
 
-We estimated considerable uncertainty in not only the numbers of spawning Chinook and their subsequent offspring in the Willamette River basin, but also in the relationship between them (Figure 3a). Across all years, the median of the intrinsic productivity (i.e., the slope at the origin) was 1.6 surviving recruits per spawner (Fig. 3b). The lower bound of the 95% credible interval was 0.94 offspring per parent, which is just below the population replacement level. The upper bound of the 95% credible interval was 2.9 recruits per spawner. The median of the posterior probability distribution for the carrying capacity of the freshwater habitat was about 9000 adults (Fig. 3c). However, the 95% credible interval for the carrying capacity of the Willamette River basin was rather wide, ranging from approximately 1800 to 14,000 Chinook.
+## Spawner-recruit relationship
+
+We estimated considerable uncertainty in not only the numbers of spawning Chinook and their subsequent offspring in the Willamette River basin, but also in the relationship between them (Figure 3a). Across all years, the median of the mean intrinsic productivity (i.e., $\mu_{\alpha}$ the slope at the origin) was 1.6 surviving recruits per spawner (Fig. 3b). The lower bound of the 95% credible interval was 0.94 offspring per parent, which is just below the population replacement level. The upper bound of the 95% credible interval was 2.9 recruits per spawner. The median of the posterior probability distribution for the carrying capacity of the freshwater habitat was about 9000 adults (Fig. 3c). However, the 95% credible interval for the carrying capacity of the Willamette River basin was rather wide, ranging from approximately 1800 to 14,000 Chinook.
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
@@ -223,7 +227,7 @@ cnt <- cnt + 1
 \includegraphics[width=0.9\textwidth]{figures/Fig_3_SR}
 \end{center}
 
-`r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming median values for the flow covariate (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. The black line in (a) shows the expected relationship based on the median flow value over all years; gray lines indicate the 2.5$^\\text{th}$ and 97.5$^\\text{th}$ credible intervals. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles.", display = "full")`
+`r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming median values for the flow covariate (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. The black line in (a) shows the expected relationship based on the median flow value over all years; gray lines indicate the 2.5$^\\text{th}$ and 97.5$^\\text{th}$ credible limits. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
 \normalsize
 
@@ -231,6 +235,92 @@ cnt <- cnt + 1
 \setlength{\rightskip}{0in}
 
 \vspace{0.25in}
+
+## Recruits per spawner
+
+In only 4 out of the 15 brood years did the population manage to replace itself, as evidenced from the time series of estimated recruits per spawner (Figure 4) and the general decline in spawners from 1999-2017 (Figure 2). There were three consecutive brood years (2005-2007) when overall productivity was good and the estimated recruits per spawner was above one (Figure 4), which resulted in the increase in spawners from 2008-2010 (Figure 2).
+
+
+```{r, echo=FALSE}
+cnt <- cnt + 1
+```
+
+\vspace{0.25in}
+
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
+\small
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_4_R_per_S}
+\end{center}
+
+`r fig_cap(cnt, caption = "Time series of the estimated recruits per spawner. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
+
+\normalsize
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
+
+\vspace{0.25in}
+
+
+## Flow effects
+
+There was a negative effect of winter-spring flows during the year the smolts would have been migrating to sea on the overall productivity of the population (Figure 5). The median flow effect was -0.011 (1000 cfs)^-1^, and the 95% credible interval spanned from -0.024 to 0.00 (1000 cfs)^-1^. Thus, an increase in flow of 10^4^ cfs would translate into a decrease in productivity of ~12%. This means, for example, that a relatively low-flow year like 1999 had ~2.4 times greater productivity than the highest flow year of 2012.
+
+```{r, echo=FALSE}
+cnt <- cnt + 1
+```
+
+\vspace{0.25in}
+
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
+\small
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_5_covar_effects}
+\end{center}
+
+`r fig_cap(cnt, caption = "Time series of the range of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
+
+\normalsize
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
+
+\vspace{0.25in}
+
+
+## Process errors
+
+```{r, echo=FALSE}
+cnt <- cnt + 1
+```
+
+\vspace{0.25in}
+
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
+\small
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_6_proc_errs}
+\end{center}
+
+`r fig_cap(cnt, caption = "Time series of the estimated process errors $(w_t)$, which represent the population's productivity after accounting for the effects of density dependence and environmental covariates. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
+
+\normalsize
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
+
+\vspace{0.25in}
+
 
 
 \newpage
