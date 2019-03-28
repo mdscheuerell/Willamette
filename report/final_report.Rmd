@@ -206,7 +206,7 @@ cnt <- cnt + 1
 
 \vspace{0.25in}
 
-We estimated considerable uncertainty in not only the numbers of spawning Chinook and their subsequent offspring in the Willamette River basin, but also in the relationship between them (Figure 3a). Across all years, the median of the intrinsic productivity (i.e., the slope at the origin) was 3.0 surviving offspring per spawning parent (Fig. 1b). The lower bound of the 95% credible interval was 1.6 offspring per parent, which is strong evidence that the population continues to replace itself (upper 95% CI = 6.0 offspring per parent). Within years, offspring born in 2012 had the highest survival (5.0 offspring per parent) whereas those from the 2003 brood fared the worst (1.5 offspring per parent).
+We estimated considerable uncertainty in not only the numbers of spawning Chinook and their subsequent offspring in the Willamette River basin, but also in the relationship between them (Figure 3a). Across all years, the median of the intrinsic productivity (i.e., the slope at the origin) was 1.6 surviving recruits per spawner (Fig. 3b). The lower bound of the 95% credible interval was 0.94 offspring per parent, which is just below the population replacement level. The upper bound of the 95% credible interval was 2.9 recruits per spawner. The median of the posterior probability distribution for the carrying capacity of the freshwater habitat was about 9000 adults (Fig. 3c). However, the 95% credible interval for the carrying capacity of the Willamette River basin was rather wide, ranging from approximately 1800 to 14,000 Chinook.
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
@@ -232,7 +232,6 @@ cnt <- cnt + 1
 
 \vspace{0.25in}
 
-Perhaps somewhat surprisingly, we found that the population dynamics of Chinook in the Willamette River are currently under density-dependent regulation, despite being well below historical censuses. The median of the posterior probability distribution for the carrying capacity of the freshwater habitat (a/b) was about 9100 adults (Fig. 1c). The 95% credible interval for the carrying capacity of the Willamette River basin was approximately 8300 – 14 900 Chinook.
 
 \newpage
 
