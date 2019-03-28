@@ -4,7 +4,6 @@ output:
   pdf_document:
     highlight: haddock
     toc: yes
-    number_sections: true
     toc_depth: '3'
 fontsize: 11pt
 geometry: margin=1in
@@ -60,7 +59,8 @@ if(!require("captioner")) {
   library("captioner")
 }
 ## set default caption options
-fig_cap <- captioner(suffix = ".", style = "b", style_prefix = TRUE)
+fig_cap <- captioner(prefix = "Figure S", suffix = ". ", auto_space = FALSE,
+                     style = "b", style_prefix = TRUE)
 ```
 
 We also need the following helper function.
