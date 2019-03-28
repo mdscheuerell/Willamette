@@ -236,11 +236,17 @@ Perhaps somewhat surprisingly, we found that the population dynamics of Chinook 
 
 \newpage
 
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
 \small
 
 `r tbl_cap(1, caption = "Table of model selection results with models ranked from greatest to least data support. Columns correspond to the life stage at which the flow effect would be expected to manifest itself (Life stage); the statistic used to summarize flow (Stat); the beginning and ending dates over which the flow was summarized expressed as month-day (Begin, End); the number of years by which the flow covariate was lagged relative to the brood year (Lag); the number of effective parameters $(p_e)$; the leave-one-out information criterion (LOOIC) and its standard error (se LOOIC); and the difference in LOOIC among models ($\\Delta$LOOIC). The model where \"Life stage = base\" does not contain any effect of flow.", display = "full")` 
 
 \normalsize
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
 
 ```{r, echo = FALSE}
 ## load LOOIC info
@@ -277,7 +283,7 @@ knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
 
 \normalsize
 
-I thank Eric Buhle for helpful discussions about model development. I also thank Tyrell DeWeber and Jim Peterson (USGS Oregon Cooperative Fish and Wildlife Research Unit), Rich Piaskowski (USACE), and the other members of the Science of Willamette Instream Flows Team (SWIFT) for constructive comments on our analyses. Tom Friesen, Mark Lewis and others at ODFW were invaluable in assembling the data.
+I thank Eric Buhle (BioMark, Inc) for helpful discussions about model development. I also thank Tyrell DeWeber and Jim Peterson (USGS Oregon Cooperative Fish and Wildlife Research Unit), Rich Piaskowski (USACE), and the other members of the Science of Willamette Instream Flows Team (SWIFT) for constructive comments on our analyses. Tom Friesen, Mark Lewis and others at ODFW were invaluable in assembling the data.
 
 \vspace{0.25in}
 
