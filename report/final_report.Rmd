@@ -42,6 +42,11 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 # Introduction
 
+Life cycle models are commonly used in the Pacific Northwest to evaluate the potential responses of salmon populations to possible future management actions or environmental conditions (_e.g._, climate change). These models are typically constructed by first synthesizing available demographic information (_e.g._, age, fecundity, survial rates), which may even be derived from different species and locations. Next, the estimated parameters and available data are used as inputs into population models and projections are made via repeated resampling from amongst the stochastic elements [@schaub2011, @maunder2013]. However, this general approach suffers from several shortcomings. First, information is lost when summarized to calculate demographic rates, which creates problems for determining the appropriate likelihood functions and evaluating model diagnostics. Second, there is no formal treatment of the variance and covariance within and among model parameters, which results in a false sense of precision as the model is iterated through time. Third, some data types (_e.g._, age structure) contain information about multiple aspects of population dynamics (_e.g._, recruitment and survival), which can lead to biased parameter estimates when not expliciting acknowledging their trade-offs.
+
+More recently, integrated population models (IPMs) have been developed to address these limitations. Because IPMs are based on a joint likelihood constructed from each of the individual data components, they capture the full uncertainty in the data to improve the precision and accuracy of parameter estimates [@tavecchia2009, @johnson2010]. IPMs are closely related to state-space models [@devalpine2005], which consist of a process model used to describe the true but unobservable population dynamics, and an observation model to address errors in the data that arise due to incomplete sampling, misidentification, etc. IPMs have been used in studies of birds [@schaub2007, @oppel2014], mammals [@tavecchia2009, @johnson2010], and marine fishes [@ianelli2002, @punt2010], but they are less familiar in salmonid management and conservation [_c.f._ @buhle2018]. 
+
+The goal of this project was to develop an IPM for Chinook salmon (_Oncorhynchus tshawytscha_) from the Willamette River basin and investigate whether there were detectible flow effects on the production and survival of offspring (recruits) from their spawning parents. The IPM for Pacific salmon that I describe here shares several features with those of Su and Peterman [-@su2012], Fleischman et al. [-@fleischman2013], and Winship et al. [-@winship2014]. There was a secondary goal of also evaluating the effects of water temperature as well, but the data were incimplete across several years in the middle of the time series, which precluded their inclusion in the model.
 
 # Methods
 
@@ -297,6 +302,8 @@ cnt <- cnt + 1
 
 ## Process errors
 
+There was very little autocorrelation in recruitment after accounting for the effects of spawners and flow on productivity (Figure 6).
+
 ```{r, echo=FALSE}
 cnt <- cnt + 1
 ```
@@ -369,6 +376,8 @@ knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
 
 Flow covariates were highly correlated so results should be equivocal.
 
+
+\vspace{0.15in}
 
 \Large\textbf{Acknowledgments}
 
