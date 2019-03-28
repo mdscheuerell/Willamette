@@ -42,9 +42,9 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 # Introduction
 
-Life cycle models are commonly used in the Pacific Northwest to evaluate the potential responses of salmon populations to possible future management actions or environmental conditions (_e.g._, climate change). These models are typically constructed by first synthesizing available demographic information (_e.g._, age, fecundity, survial rates), which may even be derived from different species and locations. Next, the estimated parameters and available data are used as inputs into population models and projections are made via repeated resampling from amongst the stochastic elements [@schaub2011, @maunder2013]. However, this general approach suffers from several shortcomings. First, information is lost when summarized to calculate demographic rates, which creates problems for determining the appropriate likelihood functions and evaluating model diagnostics. Second, there is no formal treatment of the variance and covariance within and among model parameters, which results in a false sense of precision as the model is iterated through time. Third, some data types (_e.g._, age structure) contain information about multiple aspects of population dynamics (_e.g._, recruitment and survival), which can lead to biased parameter estimates when not expliciting acknowledging their trade-offs.
+Life cycle models are commonly used in the Pacific Northwest to evaluate the potential responses of salmon populations to possible future management actions or environmental conditions (_e.g._, climate change). These models are typically constructed by first synthesizing available demographic information (_e.g._, age, fecundity, survial rates), which may even be derived from different species and locations. Next, the estimated parameters and available data are used as inputs into population models and projections are made via repeated resampling from amongst the stochastic elements [@schaub2011; @maunder2013]. However, this general approach suffers from several shortcomings. First, information is lost when summarized to calculate demographic rates, which creates problems for determining the appropriate likelihood functions and evaluating model diagnostics. Second, there is no formal treatment of the variance and covariance within and among model parameters, which results in a false sense of precision as the model is iterated through time. Third, some data types (_e.g._, age structure) contain information about multiple aspects of population dynamics (_e.g._, recruitment and survival), which can lead to biased parameter estimates when not expliciting acknowledging their trade-offs.
 
-More recently, integrated population models (IPMs) have been developed to address these limitations. Because IPMs are based on a joint likelihood constructed from each of the individual data components, they capture the full uncertainty in the data to improve the precision and accuracy of parameter estimates [@tavecchia2009, @johnson2010]. IPMs are closely related to state-space models [@devalpine2005], which consist of a process model used to describe the true but unobservable population dynamics, and an observation model to address errors in the data that arise due to incomplete sampling, misidentification, etc. IPMs have been used in studies of birds [@schaub2007, @oppel2014], mammals [@tavecchia2009, @johnson2010], and marine fishes [@ianelli2002, @punt2010], but they are less familiar in salmonid management and conservation [_c.f._ @buhle2018]. 
+More recently, integrated population models (IPMs) have been developed to address these limitations. Because IPMs are based on a joint likelihood constructed from each of the individual data components, they capture the full uncertainty in the data to improve the precision and accuracy of parameter estimates [@tavecchia2009; @johnson2010]. IPMs are closely related to state-space models [@devalpine2005], which consist of a process model used to describe the true but unobservable population dynamics, and an observation model to address errors in the data that arise due to incomplete sampling, misidentification, etc. IPMs have been used in studies of birds [@schaub2007; @oppel2014], mammals [@tavecchia2009; @johnson2010], and marine fishes [@ianelli2002; @punt2010], but they are less familiar in salmonid management and conservation [_c.f._ @buhle2018]. 
 
 The goal of this project was to develop an IPM for Chinook salmon (_Oncorhynchus tshawytscha_) from the Willamette River basin and investigate whether there were detectible flow effects on the production and survival of offspring (recruits) from their spawning parents. The IPM for Pacific salmon that I describe here shares several features with those of Su and Peterman [-@su2012], Fleischman et al. [-@fleischman2013], and Winship et al. [-@winship2014]. There was a secondary goal of also evaluating the effects of water temperature as well, but the data were incimplete across several years in the middle of the time series, which precluded their inclusion in the model.
 
@@ -215,7 +215,7 @@ cnt <- cnt + 1
 
 ## Spawner-recruit relationship
 
-We estimated considerable uncertainty in not only the numbers of spawning Chinook and their subsequent offspring in the Willamette River basin, but also in the relationship between them (Figure 3a). Across all years, the median of the mean intrinsic productivity (i.e., $\mu_{\alpha}$ the slope at the origin) was 1.6 surviving recruits per spawner (Fig. 3b). The lower bound of the 95% credible interval was 0.94 offspring per parent, which is just below the population replacement level. The upper bound of the 95% credible interval was 2.9 recruits per spawner. The median of the posterior probability distribution for the carrying capacity of the freshwater habitat was about 9000 adults (Fig. 3c). However, the 95% credible interval for the carrying capacity of the Willamette River basin was rather wide, ranging from approximately 1800 to 14,000 Chinook.
+We estimated considerable uncertainty in not only the numbers of spawning Chinook and their subsequent offspring in the Willamette River basin, but also in the relationship between them (Figure 3a). Across all years, the median of the mean intrinsic productivity (i.e., $\mu_{\alpha}$ the slope at the origin) was 1.6 surviving recruits per spawner (Fig. 3b). The lower bound of the 95% credible interval was 0.91 offspring per parent, which is just below the population replacement level. The upper bound of the 95% credible interval was 3.2 recruits per spawner. The median of the posterior probability distribution for the carrying capacity of the freshwater habitat was about 9000 adults (Fig. 3c). However, the 95% credible interval for the carrying capacity of the Willamette River basin was rather wide, ranging from approximately 1800 to 14,000 Chinook.
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
@@ -273,7 +273,7 @@ cnt <- cnt + 1
 
 ## Flow effects
 
-There was a negative effect of winter-spring flows during the year the smolts would have been migrating to sea on the overall productivity of the population (Figure 5). The median flow effect was -0.011 (1000 cfs)^-1^, and the 95% credible interval spanned from -0.024 to 0.00 (1000 cfs)^-1^. Thus, an increase in flow of 10^4^ cfs would translate into a decrease in productivity of ~12%. This means, for example, that a relatively low-flow year like 1999 had ~2.4 times greater productivity than the highest flow year of 2012.
+There was a negative effect of winter-spring flows during the year the smolts would have been migrating to sea on the overall productivity of the population (Figure 5). The median flow effect was -0.0095 (1000 cfs)^-1^, and the 95% credible interval spanned from -0.022 to 0.000 (1000 cfs)^-1^. Thus, an increase in flow of 10^4^ cfs would translate into a decrease in productivity of ~12%. This means, for example, that a relatively low-flow year like 1999 had ~2.4 times greater productivity than the highest flow year of 2012.
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
@@ -290,7 +290,7 @@ cnt <- cnt + 1
 \includegraphics[width=0.9\textwidth]{figures/Fig_5_covar_effects}
 \end{center}
 
-`r fig_cap(cnt, caption = "Time series of the range of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the maximum of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
 \normalsize
 
@@ -302,7 +302,7 @@ cnt <- cnt + 1
 
 ## Process errors
 
-There was very little autocorrelation in recruitment after accounting for the effects of spawners and flow on productivity (Figure 6).
+The process errors (Figure 6a) showed very little autocorrelation in recruitment after accounting for the effects of spawners and flow on productivity (Figure 6b).
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
@@ -319,7 +319,7 @@ cnt <- cnt + 1
 \includegraphics[width=0.9\textwidth]{figures/Fig_6_proc_errs}
 \end{center}
 
-`r fig_cap(cnt, caption = "Time series of the estimated process errors $(w_t)$, which represent the population's productivity after accounting for the effects of density dependence and environmental covariates. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the estimated process errors (a), which represent the population's productivity after accounting for the effects of density dependence and environmental covariates, and the posterior distribution of the autocorrelation parameter $\\phi$ (b). The solid line in (a) is the median estimate and the shaded region indicates the 95% credible interval. Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
 \normalsize
 
