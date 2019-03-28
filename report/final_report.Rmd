@@ -67,37 +67,37 @@ Importantly, many of the covariates were highly correlated due to the nature of 
 
 ### Total recruits
 
-We begin with our process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults produce some number of surviving offspring, which follows a general Ricker model (Figure 1), such that
+I begin with the process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults $(S_t)$ produce some number of surviving recruits $(R_t)$ according to a general Ricker model (Figure 1), such that
 	
 \begin{equation}
-R_t = \frac{\alpha S_t}{\mathrm{e}^{\beta S_t}}.
+R_t = \frac{\alpha S_t}{\mathrm{e}^{\beta S_t}},
 \end{equation}
 
-Here $R_t$ is the total number of subsequent recruits (offspring) born in year _t_; $S_t$ is the true, but unobserved, number of spawning adults; $\alpha$ is the intrinsic productivity; and $\beta$ is the strength of density dependence.
+and $\alpha$ and $\beta$ are the intrinsic productivity and _per capita_ strength of density dependence, respectively.
 
-In this case, however, I make two modifications to Eqn (1): _i_) allow the intrinsic productivity to vary over time, and _ii_) allow for additional unexplained annual variation. Specifically, the model becomes (in log-space)
+In this case, however, I make two modifications to the traditional model form in Eqn (1): _i_) I allow the intrinsic productivity to vary over time, and _ii_) I allow for additional unexplained annual variation. Specifically, the log-linear model is
 
 \begin{equation}
-\log(R_t) = \log(S_t) + a_t - b S_t + w_t.
+\log(R_t) = \log(S_t) + \log(\alpha_t) - \beta S_t + w_t,
 \end{equation}
 
-Here $a_t$ is the log of the annual density-independent productivity ($a = \log \alpha$), $b = \beta$ and $w_t$ is autocorrelated over time according to $w_t \sim \text{N}(\phi w_{t-1}, q_a)$. Previous applications of time-varying productivity [e.g., @peterman2003; @dorner2008] have used a Markov form where $a_t \sim \text{N}(a_{t-1}, \sigma_a)$, but here we will model $a_t$ as a function of time-varying covariates. Specifically,
+where $\log(\alpha_t)$ is the log of the annual density-independent productivity. Here $w_t$ is an autocorrelated process error, which accounts for unknown and unmeasured environmental drivers of Chinook productivity; $w_t \sim \text{N}(\phi w_{t-1}, q_a)$. Previous applications of time-varying productivity [e.g., @peterman2003; @dorner2008] have used a Markov form where $\log(\alpha_t) \sim \text{N}(\log(\alpha_{t-1}), \sigma_{\alpha})$, but I model $\log(\alpha_t)$ as a function of time-varying covariates. Specifically,
 
 \begin{equation}
-a_t = \bar{a} + \sum_{i=1}^{M} c_{i,t} \ X_{i,t+h},
+\log{\alpha_t} = \mu_a + \gamma F_{t+h},
 \end{equation}
 
-$\bar{a}$ is the underlying mean productivity, and $c_{i,t}$ is the effect of covariate $i$ at time $t$, $X_{i,t+h}$. To allow for direct comparison of effect sizes, the covariates are typically standardized to have a zero mean and unit variance.
+$\mu_a$ is the underlying mean productivity, and $\gamma$ is the effect of the appropriately lagged flow covariate, $F_{t+h}$.
 
 ### Age-specific survival & maturation
 
-The estimated number of fish of age $a$ returning in year $t$ $(N_{a,t})$ is then product of the total number of brood-year recruits in year $t - a$ and the proportion of mature fish from that brood year that returned to spawn at age $a$ $(p_{a,t-a})$, such that
+The estimated number of fish of age $a$ returning in year $t$ $(N_{a,t})$ is the product of the total number of brood-year recruits in year $t - a$ and the proportion of mature fish from that brood year returning to spawn at age $a$ $(p_{a,t-a})$, such that
 
 \begin{equation}
 N_{a,t} = R_{t-a} \ p_{a,t-a}.
 \end{equation}
 
-The vector of age-specific return rates for brood year $t$ $(\mathbf{p}_t)$ has length $A$, which equals the number of adult age classes. That is, $\mathbf{p}_t$ is a combination of the probability of surviving to, and maturing in years $t + a_{\min}$ to $t + a_{\max}$ (_i.e._, $t + 3$ to $t + 6$). We modeled $(\mathbf{p}_t)$ as a random effect using a hierarchical form of the Dirichlet distribution, where
+The vector of age-specific return rates for brood year $t$, $\mathbf{p}_t = [p_{3,t-3} ~ p_{4,t-4} ~ p_{5,t-5} ~ p_{6,t-6}]$, is a combination of the probability of surviving to, and maturing in years $t + a_{\min}$ to $t + a_{\max}$ (_i.e._, $t + 3$ to $t + 6$). I modeled $(\mathbf{p}_t)$ as a random effect using a hierarchical form of the Dirichlet distribution, where
 
 \begin{equation}
 \mathbf{p}_t \sim \text{Dirichlet}(\boldsymbol{\mu},\pi).
@@ -277,8 +277,12 @@ knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
 
 # Discussion
 
+Flow covariates were highly correlated so results should be equivocal.
+
 
 \Large\textbf{Acknowledgments}
+
+\vspace{0.15in}
 
 \normalsize
 
