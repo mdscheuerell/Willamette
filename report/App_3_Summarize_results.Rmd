@@ -6,8 +6,6 @@ output:
     toc: yes
     number_sections: true
     toc_depth: '3'
-    includes:
-      in_header: preamble.tex
 fontsize: 11pt
 geometry: margin=1in
 ---
@@ -165,6 +163,8 @@ bb <- median(mod_res[, "beta"])
 ## alpha w/ effect of median flow
 alpha_est <- mod_res[, "alpha"] * exp(mod_res[, "gamma"] * median(dat_cvrs[,best_i+1]))
 alphaCI <- quantile(alpha_est, CI_vec)
+## pile into last ban for plotting
+alpha_est[alpha_est > 5] <- 5
 
 ## carrying capacity in 1000s
 K_est <- log(alpha_est) / mod_res[, "beta"] / 1000
@@ -305,7 +305,7 @@ axis(1, at = seq(0,xM,dd*2), labels = seq(0,xM,dd*2)/1000)
 axis(2, at = seq(0,yM,dd*2), labels = seq(0,yM,dd*2)/1000, las=1)
 for(i in 1:length(alphaCI)) {
   lines(alphaCI[i] * seq(0,xM) * exp(-bb * seq(0,xM)),
-        col = ifelse(i==2, "black", "darkgray"))
+        lwd = 2, col = ifelse(i==2, "black", "darkgray"))
 }
 abline(a = 0,b = 1,lty = "dashed")
 
@@ -382,7 +382,52 @@ cnt <- cnt + 1
 \includegraphics[width=0.9\textwidth]{figures/Fig_3_SR}
 \end{center}
 
-`r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming median values for the flow covariate (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. The black line in (a) shows the expected relationship based on the median flow value over all years; gray lines indicate the 2.5$^\\text{th}$ and 97.5$^\\text{th}$ credible intervals. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles.", display = "full")`
+`r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming median values for the flow covariate (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. The black line in (a) shows the expected relationship based on the median flow value over all years; gray lines indicate the 2.5$^\\text{th}$ and 97.5$^\\text{th}$ credible limits. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
+
+\newpage
+
+## Recruits per spawner
+
+```{r plot_R_per_S, fig.width = 7, fig.height = 4, fig.pos = "placeHere", fig.align="center"}
+png(file.path(figsdir, "Fig_4_R_per_S.png"),
+    height = 4, width = 7, units = "in", res = 500)
+
+par(mai = c(1,1,0.1,0.1), omi = c(0,0,0,0))
+clr <- rgb(0, 0, 255, alpha = 50, maxColorValue = 255)
+
+## time sequence
+t_idx_a <- seq(yr_frst, length.out = n_yrs-age_min+n_fore)
+## plot data
+p_dat <- mod_res[, grep("ln_RS", colnames(mod_res))]
+p_dat <- apply(p_dat, 2, quantile, CI_vec)
+yp_min <- min(p_dat)
+yp_max <- max(p_dat)
+## plot
+plot(t_idx_a, p_dat[3,],
+     type = "n",  bty = "L", xaxt = "n",
+     ylim = c(yp_min,yp_max),
+     xlab = "Brood year", ylab = "ln(R/S)", main = "",
+     cex.lab = 1.5, cex.axis = 1.2, las = 1)
+abline(h = 0, lty = "dashed")
+polygon(c(t_idx_a, rev(t_idx_a)), c(p_dat[3,], rev(p_dat[1,])),
+        col = clr, border = NA)
+lines(t_idx_a, p_dat[2,], col = "blue3", lwd = 2)
+axis(1, at = seq(2000, 2015, 3))
+
+dev.off()
+```
+
+```{r, echo=FALSE}
+cnt <- cnt + 1
+```
+
+\newpage
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_4_R_per_S}
+\end{center}
+
+`r fig_cap(cnt, caption = "Time series of the estimated recruits per spawner. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
 
 \newpage
 
@@ -398,7 +443,7 @@ ylN <- Re2prec(min(c_est), "floor", 0.02)
 ylM <- Re2prec(max(c_est), "ceiling", 0.02)
 brks <- seq(ylN,ylM, length.out = diff(c(ylN,ylM))*400+1)
 
-png(file.path(figsdir, "Fig_4_covar_effects.png"),
+png(file.path(figsdir, "Fig_5_covar_effects.png"),
      height = 3.5, width = 7, units = "in", res = 500)
 
 par(mfrow=c(1,2), mai=c(0.4,0.4,0.1,0.1), omi=c(0.5,0.5,0,0))
@@ -437,7 +482,7 @@ cnt <- cnt + 1
 \newpage
 
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/Fig_4_covar_effects}
+\includegraphics[width=0.9\textwidth]{figures/Fig_5_covar_effects}
 \end{center}
 
 `r fig_cap(cnt, caption = "Time series of the range of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
@@ -455,7 +500,7 @@ proc_err <- apply(proc_err, 2, quantile, CI_vec)
 yp_min <- min(proc_err)
 yp_max <- max(proc_err)
 
-png(file.path(figsdir, "Fig_5_proc_errs.png"),
+png(file.path(figsdir, "Fig_6_proc_errs.png"),
      height = 4, width = 7, units = "in", res = 500)
 
 ## plot
@@ -481,9 +526,9 @@ cnt <- cnt + 1
 \newpage
 
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/Fig_5_proc_errs}
+\includegraphics[width=0.9\textwidth]{figures/Fig_6_proc_errs}
 \end{center}
 
-`r fig_cap(cnt, caption = "Time series of the estimated process errors, which represent the population's productivity after accounting for the effects of density dependence and environmental covariates. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the estimated process errors $(w_t)$, which represent the population's productivity after accounting for the effects of density dependence and environmental covariates. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
 
 
