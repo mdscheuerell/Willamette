@@ -118,10 +118,14 @@ cnt <- 1
 \setlength{\leftskip}{0.375in}
 \setlength{\rightskip}{0.375in}
 
+\small
+
 `r fig_cap(cnt, caption = "Deterministic form of the Ricker model used in the analysis. The parameter $\\alpha$ is the slope at the origin and the derived parameter $K$ is the carrying capacity. The gray line is where $R_t = S_t$.", display = "full")` 
 
 \setlength{\leftskip}{0in}
 \setlength{\rightskip}{0in}
+
+\normalsize
 
 \vspace{0.25in}
 
@@ -187,11 +191,15 @@ cnt <- cnt + 1
 \setlength{\leftskip}{0.375in}
 \setlength{\rightskip}{0.375in}
 
+\small
+
 \begin{center}
 \includegraphics[width=0.9\textwidth]{figures/Fig_2_popn_size}
 \end{center}
 
 `r fig_cap(cnt, caption = "Time series of the estimated total population size. The observed data are the points; the solid line is the median estimate of the true number of spawners and the shaded region indicates the 95% credible interval.", display = "full")`
+
+\normalsize
 
 \setlength{\leftskip}{0in}
 \setlength{\rightskip}{0in}
@@ -209,11 +217,15 @@ cnt <- cnt + 1
 \setlength{\leftskip}{0.375in}
 \setlength{\rightskip}{0.375in}
 
+\small
+
 \begin{center}
 \includegraphics[width=0.9\textwidth]{figures/Fig_3_SR}
 \end{center}
 
 `r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming median values for the flow covariate (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. The black line in (a) shows the expected relationship based on the median flow value over all years; gray lines indicate the 2.5$^\\text{th}$ and 97.5$^\\text{th}$ credible intervals. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles.", display = "full")`
+
+\normalsize
 
 \setlength{\leftskip}{0in}
 \setlength{\rightskip}{0in}
