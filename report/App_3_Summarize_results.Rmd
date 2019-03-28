@@ -244,7 +244,7 @@ yp_max <- max(run_size)
 png(file.path(figsdir, "Fig_2_popn_size.png"),
      height = 4, width = 7, units = "in", res = 500)
 
-par(mai = c(1,1,0.1,0.1), omi = c(0.5,0.5,0.1,0.2))
+par(mai = c(1,1,0.1,0.1), omi = c(0,0,0,0))
 plot(t_idx_f, run_size[3,], ylim = c(yp_min,yp_max), type = "n",
      log = "y", xaxt = "n", yaxt = "n", bty = "L",
      xlab = "Year", ylab = expression(Spawners~(10^3)),
