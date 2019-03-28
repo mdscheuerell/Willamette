@@ -247,7 +247,7 @@ png(file.path(figsdir, "Fig_2_popn_size.png"),
 par(mai = c(1,1,0.1,0.1), omi = c(0.5,0.5,0.1,0.2))
 plot(t_idx_f, run_size[3,], ylim = c(yp_min,yp_max), type = "n",
      log = "y", xaxt = "n", yaxt = "n", bty = "L",
-     xlab = "Year", ylab = expression(Catch~+~Escapement~(10^3)),
+     xlab = "Year", ylab = expression(Spawners~(10^3)),
      main = "", cex.lab = 1.2)
 polygon(c(t_idx_f, rev(t_idx_f)), c(run_size[3,], rev(run_size[1,])),
         col = clr, border = NA)
@@ -270,7 +270,7 @@ cnt <- cnt + 1
 \includegraphics[width=0.9\textwidth]{figures/Fig_2_popn_size}
 \end{center}
 
-`r fig_cap(cnt, caption = "Time series of the estimated total population size (catch plus escapement). The observed data are the points; the solid line is the median estimate of the true number of spawners and the shaded region indicates the 95% credible interval.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the estimated total population size. The observed data are the points; the solid line is the median estimate of the true number of spawners and the shaded region indicates the 95% credible interval.", display = "full")`
 
 \newpage
 
