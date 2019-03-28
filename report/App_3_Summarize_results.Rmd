@@ -102,7 +102,7 @@ CI_vec <- c(0.025,0.5,0.975)
 cov_name <- expression(paste("Flow (",ft^3," ",s^{-1},")"))
 
 ## best model
-best_i <- 28
+best_i <- 25
 ```
 
 # Load the information
