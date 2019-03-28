@@ -31,7 +31,7 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 This appendix shows how to recreate the figures in the main text based on the results from the best of the fitted models.
 
-All analyses require the [R software](https://cran.r-project.org/) (v3.4.3 or later), as well as a few packages that are not included with the base installation of R.
+All analyses require the [R software](https://cran.r-project.org/) (v3.5 or later), as well as a few packages that are not included with the base installation of R.
 
 ```{r load_pkgs, message = FALSE, warning = FALSE}
 ## for dir management
@@ -485,7 +485,7 @@ cnt <- cnt + 1
 \includegraphics[width=0.9\textwidth]{figures/Fig_5_covar_effects}
 \end{center}
 
-`r fig_cap(cnt, caption = "Time series of the range of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the maximum of the 7-day mean flow during the months of February through April (a), and its estimated effect on population productivity (b). Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
 \newpage
 
@@ -501,20 +501,45 @@ yp_min <- min(proc_err)
 yp_max <- max(proc_err)
 
 png(file.path(figsdir, "Fig_6_proc_errs.png"),
-     height = 4, width = 7, units = "in", res = 500)
+     height = 3.5, width = 7, units = "in", res = 500)
 
-## plot
-par(mai = c(0.8,0.8,0.1,0.1), omi = c(0,0.2,0.1,0.2))
+phi_est <- mod_res[,grep("phi", colnames(mod_res))]
+ylN <- Re2prec(min(phi_est), "floor", 0.02)
+ylM <- Re2prec(max(phi_est), "ceiling", 0.02)
+brks <- seq(ylN,ylM, length.out = diff(c(ylN,ylM))*20+1)
+
+par(mfrow=c(1,2), mai=c(0.4,0.4,0.1,0.1), omi=c(0.5,0.5,0,0))
+
+## plot proc errors
 plot(t_idx_a, proc_err[3,],
      type = "n",  bty = "L", xaxt = "n", las = 1,
      ylim = c(yp_min,yp_max),
-     xlab = "Brood year", ylab = "Process error", main = "",
+     xlab = "", ylab = "", main = "",
      cex.lab = 1.2)
 abline(h = 0, lty = "dashed")
 polygon(c(t_idx_a, rev(t_idx_a)), c(proc_err[3,], rev(proc_err[1,])),
         col = clr, border = NA)
 lines(t_idx_a, proc_err[2,], col = "blue3", lwd = 2)
+text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
+     y = par()$usr[4] - diff(par()$usr[3:4]) * yoffSet,
+     "(a)")
 axis(1, at = seq(2000, 2015, 3))
+mtext(side = 2, "Process error", line = 3, cex = 1.2)
+mtext(side = 1, "Brood year", line = 3, cex = 1.2)
+
+## plot covar effect
+hist(phi_est,
+     freq = FALSE, breaks = brks, col = clr, border =" blue3",
+     xlab = "", yaxt = "n", main = "", ylab = "")
+phi_CI <- quantile(phi_est,CI_vec)
+aHt <- (par()$usr[4]-par()$usr[3])/20
+arrows(phi_CI, par()$usr[3]-0.005, phi_CI, par()$usr[3] - aHt,
+       code = 1,length = 0.05, xpd = NA, col = "blue3", lwd = 1.5)
+abline(v = 0, lty = "dashed")
+text(x = par()$usr[1] + diff(par()$usr[1:2]) * xoffSet,
+     y = par()$usr[4] - diff(par()$usr[3:4]) * yoffSet,
+     "(b)")
+mtext(side = 1,expression(phi), line = 3, cex = 1.2)
 
 dev.off()
 ```
@@ -529,6 +554,6 @@ cnt <- cnt + 1
 \includegraphics[width=0.9\textwidth]{figures/Fig_6_proc_errs}
 \end{center}
 
-`r fig_cap(cnt, caption = "Time series of the estimated process errors $(w_t)$, which represent the population's productivity after accounting for the effects of density dependence and environmental covariates. The solid line is the median estimate and the shaded region indicates the 95% credible interval.", display = "full")`
+`r fig_cap(cnt, caption = "Time series of the estimated process errors (a), which represent the population's productivity after accounting for the effects of density dependence and environmental covariates, and the posterior distribution of the autocorrelation parameter $\\phi$ (b). The solid line in (a) is the median estimate and the shaded region indicates the 95% credible interval. Small arrows under the histogram in (b) denote 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles of the posterior distribution.", display = "full")`
 
 
