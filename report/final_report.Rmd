@@ -115,7 +115,15 @@ In this formulation, the mean vector $\boldsymbol{\mu}$ is itself distributed as
 cnt <- 1
 ```
 
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
 `r fig_cap(cnt, caption = "Deterministic form of the Ricker model used in the analysis. The parameter $\\alpha$ is the slope at the origin and the derived parameter $K$ is the carrying capacity. The gray line is where $R_t = S_t$.", display = "full")` 
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
+
+\vspace{0.25in}
 
 ## Observation models
 
@@ -166,7 +174,53 @@ Appendix S2 contains a detailed workflow that will allow anyone to reproduce the
 
 # Results
 
-## Model selection
+The model incorporating flow during the smolt outmigration period had the most data support and lowest LOOIC (Table 1), so the following results are based on that model. However, the relative large standard errors in the model-specific LOOIC values indicates very little difference in the predictive accuracy among the various models. That said, there is some evidence suggesting that the models with flow covariates offer an improvement in predictive accuracy over the base model containing no flow covariate. 
+
+Estimates of the total population size of spawners over time agreed quite well with the observed data; all of the observations fell within the 95% credible intervals (Figure 2). There was a notable decrease in spawner abundance from 2003 to 2008; the number of spawners during the five years from 1999-2003 was 2-3 times greater than during the period from 2004-2017.
+
+```{r, echo=FALSE}
+cnt <- cnt + 1
+```
+
+\vspace{0.25in}
+
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_2_popn_size}
+\end{center}
+
+`r fig_cap(cnt, caption = "Time series of the estimated total population size. The observed data are the points; the solid line is the median estimate of the true number of spawners and the shaded region indicates the 95% credible interval.", display = "full")`
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
+
+\vspace{0.25in}
+
+We estimated considerable uncertainty in not only the numbers of spawning Chinook and their subsequent offspring in the Willamette River basin, but also in the relationship between them (Figure 3a). Across all years, the median of the intrinsic productivity (i.e., the slope at the origin) was 3.0 surviving offspring per spawning parent (Fig. 1b). The lower bound of the 95% credible interval was 1.6 offspring per parent, which is strong evidence that the population continues to replace itself (upper 95% CI = 6.0 offspring per parent). Within years, offspring born in 2012 had the highest survival (5.0 offspring per parent) whereas those from the 2003 brood fared the worst (1.5 offspring per parent).
+
+```{r, echo=FALSE}
+cnt <- cnt + 1
+```
+
+\vspace{0.25in}
+
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/Fig_3_SR}
+\end{center}
+
+`r fig_cap(cnt, caption = "Relationship between the number of spawning adults and their subsequent surviving offspring (recruits), assuming median values for the flow covariate (a); and the estimated posterior distributions for the intrinsic productivity (b) and carrying capacity (c). Points in (a) are medians of the posterior estimates; error bars indicate the 95% credible intervals. Blue points are for estimates with complete broods; purple points are for the most recent years with incomplete broods. The black line in (a) shows the expected relationship based on the median flow value over all years; gray lines indicate the 2.5$^\\text{th}$ and 97.5$^\\text{th}$ credible intervals. Note that for plotting purposes only in (b) and (c), the density in the largest bin for each parameter contains counts for all values greater than or equal to it. Vertical arrows under the x-axes in (b) and (c) indicate the 2.5$^\\text{th}$, 50$^\\text{th}$, and 97.5$^\\text{th}$ percentiles.", display = "full")`
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
+
+\vspace{0.25in}
+
+Perhaps somewhat surprisingly, we found that the population dynamics of Chinook in the Willamette River are currently under density-dependent regulation, despite being well below historical censuses. The median of the posterior probability distribution for the carrying capacity of the freshwater habitat (a/b) was about 9100 adults (Fig. 1c). The 95% credible interval for the carrying capacity of the Willamette River basin was approximately 8300 – 14 900 Chinook.
 
 \newpage
 
