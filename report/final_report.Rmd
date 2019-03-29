@@ -39,10 +39,15 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 # Summary {-}
 
+This report describes the development and application of an integrated population model for natural-origin Chinook salmon (_Oncorhynchus tshawytscha_) from the Willamette River basin. The model was developed with the intent of investigating the possible effects of present-day river flows and temperature on the recruitment of adults, in the hope of informing future consequences to fish and wildlife owing to possible changes in resevoir operations. Unfortunately, temperature records we incomplete across several consecutive years, which precluded their use in the model. Flow metrics were generated through a collaborative process with the Science of Willamette Instream Flows Team (SWIFT), and focused on effects of flow during particular life stages based on first principles (_e.g._, decreased flows during the summer may negatively affect parr survival). SWIFT derived 32 different flow scenarios that included the following periods/life stages: prespawning, egg incubation, rearing of age-1 parr, age-1 outmigrants, and age-2 outmigrants.
+
+The model involves two primary components: process models governing population dynamics, and obsvervation models to account for imperfact information. Using fish and flow data from 1999-2017, a model based the maximum flow during the period when age-2 smolts were outmigrating had the greatest predictive accuracy. Results from that model indicate relatively strong density-dependent population dynamics. On average, one should expect about 1.6 recruits per spawner at low spawner abundance, at a carrying capacity of approximately 9000 adults. This time period was also marked by rather poor recruitment overall; after accounting for the negative effect of flows and spawner density, only four years were at or above replacement. In addition, because the chosen set of flow metrics had such high covariance among them, many models had relatively similar predictive accuracy. Thus, care should be exercised when interpreting the importance of any one flow metric over another.
+
+\newpage
 
 # Introduction
 
-Life cycle models are commonly used in the Pacific Northwest to evaluate the potential responses of salmon populations to possible future management actions or environmental conditions (_e.g._, climate change). These models are typically constructed by first synthesizing available demographic information (_e.g._, age, fecundity, survial rates), which may even be derived from different species and locations. Next, the estimated parameters and available data are used as inputs into population models and projections are made via repeated resampling from amongst the stochastic elements [@schaub2011; @maunder2013]. However, this general approach suffers from several shortcomings. First, information is lost when summarized to calculate demographic rates, which creates problems for determining the appropriate likelihood functions and evaluating model diagnostics. Second, there is no formal treatment of the variance and covariance within and among model parameters, which results in a false sense of precision as the model is iterated through time. Third, some data types (_e.g._, age structure) contain information about multiple aspects of population dynamics (_e.g._, recruitment and survival), which can lead to biased parameter estimates when not expliciting acknowledging their trade-offs.
+Life cycle models are commonly used in the Pacific Northwest to evaluate the potential responses of salmon populations to possible future management actions or environmental conditions (_e.g._, climate change). These models are typically constructed by first synthesizing available demographic information (_e.g._, age, fecundity, survial rates), which may be derived from different species and locations. Next, the estimated parameters and available data are used as inputs into population models and projections are made via repeated resampling from amongst the stochastic elements [@schaub2011; @maunder2013]. However, this general approach suffers from several shortcomings. First, information is lost when summarized to calculate demographic rates, which creates problems for determining the appropriate likelihood functions and evaluating model diagnostics. Second, there is no formal treatment of the variance and covariance within and among model parameters, which results in a false sense of precision as the model is iterated through time. Third, some data types (_e.g._, age structure) contain information about multiple aspects of population dynamics (_e.g._, recruitment and survival), which can lead to biased parameter estimates when not expliciting acknowledging their trade-offs.
 
 More recently, integrated population models (IPMs) have been developed to address these limitations. Because IPMs are based on a joint likelihood constructed from each of the individual data components, they capture the full uncertainty in the data to improve the precision and accuracy of parameter estimates [@tavecchia2009; @johnson2010]. IPMs are closely related to state-space models [@devalpine2005], which consist of a process model used to describe the true but unobservable population dynamics, and an observation model to address errors in the data that arise due to incomplete sampling, misidentification, etc. IPMs have been used in studies of birds [@schaub2007; @oppel2014], mammals [@tavecchia2009; @johnson2010], and marine fishes [@ianelli2002; @punt2010], but they are less familiar in salmonid management and conservation [_c.f._ @buhle2018]. 
 
@@ -62,7 +67,7 @@ Due to difficulties in assessing whether or not fish of specific age were of nat
 
 ## Flow covariates
 
-During a series of workshops, the Science of Willamette Instream Flows Team (SWIFT) developed a set of possible flow covariates to include in the model as possible drivers of productivity. The set included summaries of river flows over different months and year that were focused on a specific life stage (_e.g._, minimum flows from July through September might affect the survival of parr). 
+During a series of workshops, the Science of Willamette Instream Flows Team (SWIFT) developed a set of 32 possible flow covariates to include in the model as possible drivers of productivity. The set included summaries of river flows over different months and year that were focused on a specific life stage (_e.g._, minimum flows from July through September might affect the survival of parr). 
 
 Specifically, I retrieved the raw flow data, as measured at Salem, OR, from the US Geological Service National Water Information System using the __EGRET__ package for __R__ [@egret]. I then summarized the data according to each of the specific flow metrics. Please see Appendix S1 for a detailed workflow describing the retrieval and summarization of the flow covariates.
 
@@ -94,22 +99,6 @@ where $\log(\alpha_t)$ is the log of the annual density-independent productivity
 
 $\mu_a$ is the underlying mean productivity, and $\gamma$ is the effect of the appropriately lagged flow covariate, $F_{t+h}$.
 
-### Age-specific survival & maturation
-
-The estimated number of fish of age $a$ returning in year $t$ $(N_{a,t})$ is the product of the total number of brood-year recruits in year $t - a$ and the proportion of mature fish from that brood year returning to spawn at age $a$ $(p_{a,t-a})$, such that
-
-\begin{equation}
-N_{a,t} = R_{t-a} \ p_{a,t-a}.
-\end{equation}
-
-The vector of age-specific return rates for brood year $t$, $\mathbf{p}_t = [p_{3,t-3} ~ p_{4,t-4} ~ p_{5,t-5} ~ p_{6,t-6}]$, is a combination of the probability of surviving to, and maturing in years $t + a_{\min}$ to $t + a_{\max}$ (_i.e._, $t + 3$ to $t + 6$). I modeled $(\mathbf{p}_t)$ as a random effect using a hierarchical form of the Dirichlet distribution, where
-
-\begin{equation}
-\mathbf{p}_t \sim \text{Dirichlet}(\boldsymbol{\mu},\pi).
-\end{equation}
-
-In this formulation, the mean vector $\boldsymbol{\mu}$ is itself distributed as a Dirichlet, and therefore has a total of $A$ elements that are all greater than zero. The precision parameter $\pi$ affects each of the elements in $\boldsymbol{\mu}$, such that large values of $\pi$ results in values of $\mathbf{p}_t$ that are very close to $\boldsymbol{\mu}$.
-
 \vspace{0.25in}
 
 \begin{center}
@@ -133,6 +122,22 @@ cnt <- 1
 \normalsize
 
 \vspace{0.25in}
+
+### Age-specific survival & maturation
+
+The estimated number of fish of age $a$ returning in year $t$ $(N_{a,t})$ is the product of the total number of brood-year recruits in year $t - a$ and the proportion of mature fish from that brood year returning to spawn at age $a$ $(p_{a,t-a})$, such that
+
+\begin{equation}
+N_{a,t} = R_{t-a} \ p_{a,t-a}.
+\end{equation}
+
+The vector of age-specific return rates for brood year $t$, $\mathbf{p}_t = [p_{3,t-3} ~ p_{4,t-4} ~ p_{5,t-5} ~ p_{6,t-6}]$, is a combination of the probability of surviving to, and maturing in years $t + a_{\min}$ to $t + a_{\max}$ (_i.e._, $t + 3$ to $t + 6$). I modeled $(\mathbf{p}_t)$ as a random effect using a hierarchical form of the Dirichlet distribution, where
+
+\begin{equation}
+\mathbf{p}_t \sim \text{Dirichlet}(\boldsymbol{\mu},\pi).
+\end{equation}
+
+In this formulation, the mean vector $\boldsymbol{\mu}$ is itself distributed as a Dirichlet, and therefore has a total of $A$ elements that are all greater than zero. The precision parameter $\pi$ affects each of the elements in $\boldsymbol{\mu}$, such that large values of $\pi$ results in values of $\mathbf{p}_t$ that are very close to $\boldsymbol{\mu}$.
 
 ## Observation models
 
@@ -184,6 +189,45 @@ Appendix S2 contains a detailed workflow that will allow anyone to reproduce the
 # Results
 
 The model incorporating flow during the smolt outmigration period had the most data support and lowest LOOIC (Table 1), so the following results are based on that model. However, the relative large standard errors in the model-specific LOOIC values indicates very little difference in the predictive accuracy among the various models. That said, there is some evidence suggesting that the models with flow covariates offer an improvement in predictive accuracy over the base model containing no flow covariate. 
+
+\newpage
+
+\setlength{\leftskip}{0.375in}
+\setlength{\rightskip}{0.375in}
+
+\small
+
+`r tbl_cap(1, caption = "Table of model selection results with models ranked from greatest to least data support. Columns correspond to the life stage at which the flow effect would be expected to manifest itself (Life stage); the statistic used to summarize flow (Stat); the beginning and ending dates over which the flow was summarized expressed as month-day (Begin, End); the number of years by which the flow covariate was lagged relative to the brood year (Lag); the number of effective parameters $(p_e)$; the leave-one-out information criterion (LOOIC) and its standard error (se LOOIC); and the difference in LOOIC among models ($\\Delta$LOOIC). The model where \"Life stage = base\" does not contain any effect of flow.", display = "full")` 
+
+\normalsize
+
+\setlength{\leftskip}{0in}
+\setlength{\rightskip}{0in}
+
+```{r, echo = FALSE}
+## load LOOIC info
+tbl_LOOIC <- readRDS(file.path(jagsdir, "tbl_LOOIC.rds"))
+tbl_LOOIC <- tbl_LOOIC[,!(names(tbl_LOOIC) %in% "se_p_loo")]
+## print table
+knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
+             format = "latex",
+             booktabs = TRUE,
+             col.names = c("Life stage",
+                           "Stat",
+                           "Begin",
+                           "End",
+                           "Lag",
+                           "$p_e$",
+                           "LOOIC",
+                           "se LOOIC",
+                           "$\\Delta$LOOIC"),
+             escape = FALSE,
+             row.names = FALSE,
+             align = c("l", rep("c", 8))) %>%
+  kable_styling(position = "center", font_size = 10)
+```
+
+\newpage
 
 ## Population size
 
@@ -330,44 +374,6 @@ cnt <- cnt + 1
 
 
 
-\newpage
-
-\setlength{\leftskip}{0.375in}
-\setlength{\rightskip}{0.375in}
-
-\small
-
-`r tbl_cap(1, caption = "Table of model selection results with models ranked from greatest to least data support. Columns correspond to the life stage at which the flow effect would be expected to manifest itself (Life stage); the statistic used to summarize flow (Stat); the beginning and ending dates over which the flow was summarized expressed as month-day (Begin, End); the number of years by which the flow covariate was lagged relative to the brood year (Lag); the number of effective parameters $(p_e)$; the leave-one-out information criterion (LOOIC) and its standard error (se LOOIC); and the difference in LOOIC among models ($\\Delta$LOOIC). The model where \"Life stage = base\" does not contain any effect of flow.", display = "full")` 
-
-\normalsize
-
-\setlength{\leftskip}{0in}
-\setlength{\rightskip}{0in}
-
-```{r, echo = FALSE}
-## load LOOIC info
-tbl_LOOIC <- readRDS(file.path(jagsdir, "tbl_LOOIC.rds"))
-tbl_LOOIC <- tbl_LOOIC[,!(names(tbl_LOOIC) %in% "se_p_loo")]
-## print table
-knitr::kable(tbl_LOOIC[order(tbl_LOOIC[,"looic"]),],
-             format = "latex",
-             booktabs = TRUE,
-             col.names = c("Life stage",
-                           "Stat",
-                           "Begin",
-                           "End",
-                           "Lag",
-                           "$p_e$",
-                           "LOOIC",
-                           "se LOOIC",
-                           "$\\Delta$LOOIC"),
-             escape = FALSE,
-             row.names = FALSE,
-             align = c("l", rep("c", 8))) %>%
-  kable_styling(position = "center", font_size = 10)
-```
-
-\newpage
 
 
 
