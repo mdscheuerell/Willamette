@@ -12,7 +12,7 @@ geometry: margin=1in
 
 ```{r set_options, echo = FALSE, message = FALSE}
 options(width = 100)
-knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(message = FALSE, size="small")
 def_chunk_hook  <- knitr::knit_hooks$get("chunk")
 knitr::knit_hooks$set(chunk = function(x, options) {
   x <- def_chunk_hook(x, options)
@@ -53,7 +53,7 @@ if(!require("captioner")) {
   devtools::install_github("adletaw/captioner")
   library("captioner")
 }
-fig_cap <- captioner(prefix = "Figure S", suffix = ". ",
+fig_cap <- captioner(prefix = "Figure A1-", suffix = ". ",
                      style = "b", style_prefix = TRUE,
                      auto_space = FALSE)
 ```
