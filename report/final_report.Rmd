@@ -37,7 +37,7 @@ This is version `r paste0('0.',format(Sys.time(), '%y.%m.%d'))`.
 
 \newpage
 
-# Summary {-}
+# Summary
 
 This report describes the development and application of an integrated population model for natural-origin Chinook salmon (_Oncorhynchus tshawytscha_) from the Willamette River basin. The model was developed with the intent of investigating the possible effects of present-day river flows and temperature on the recruitment of adults, in the hope of informing future consequences to fish and wildlife owing to possible changes in resevoir operations. Unfortunately, temperature records we incomplete across several consecutive years, which precluded their use in the model. Flow metrics were generated through a collaborative process with the Science of Willamette Instream Flows Team (SWIFT), and focused on effects of flow during particular life stages based on first principles (_e.g._, decreased flows during the summer may negatively affect parr survival). SWIFT derived 32 different flow scenarios that included the following periods/life stages: prespawning, egg incubation, rearing of age-1 parr, age-1 outmigrants, and age-2 outmigrants.
 
@@ -51,7 +51,7 @@ Life cycle models are commonly used in the Pacific Northwest to evaluate the pot
 
 More recently, integrated population models (IPMs) have been developed to address these limitations. Because IPMs are based on a joint likelihood constructed from each of the individual data components, they capture the full uncertainty in the data to improve the precision and accuracy of parameter estimates [@tavecchia2009; @johnson2010]. IPMs are closely related to state-space models [@devalpine2005], which consist of a process model used to describe the true but unobservable population dynamics, and an observation model to address errors in the data that arise due to incomplete sampling, misidentification, etc. IPMs have been used in studies of birds [@schaub2007; @oppel2014], mammals [@tavecchia2009; @johnson2010], and marine fishes [@ianelli2002; @punt2010], but they are less familiar in salmonid management and conservation [_c.f._ @buhle2018]. 
 
-The goal of this project was to develop an IPM for Chinook salmon (_Oncorhynchus tshawytscha_) from the Willamette River basin and investigate whether there were detectible flow effects on the production and survival of offspring (recruits) from their spawning parents. The IPM for Pacific salmon that I describe here shares several features with those of Su and Peterman [-@su2012], Fleischman et al. [-@fleischman2013], and Winship et al. [-@winship2014]. There was a secondary goal of also evaluating the effects of water temperature as well, but the data were incimplete across several years in the middle of the time series, which precluded their inclusion in the model.
+Chinook salmon (_Oncorhynchus tshawytscha_) from the Willamette River basin were listed under the ESA in 1999, and the recovery plan developed by the Oregon Department of Fish and Wildlife (ODFW) and the National Marine Fisheries Service (NMFS) called for protecting existing high-quality habitats while restoring deteriorated locations [@odfw2011]. The goal of this project was to develop an IPM for Chinook salmon from the Willamette River basin and investigate whether there were detectible flow effects on the production and survival of offspring (recruits) from their spawning parents. There was a secondary goal of also evaluating the effects of water temperature as well, but the data were incimplete across several years in the middle of the time series, which precluded their inclusion in the model.
 
 # Methods
 
@@ -77,7 +77,7 @@ Importantly, many of the covariates were highly correlated due to the nature of 
 
 ### Total recruits
 
-I begin with the process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults $(S_t)$ produce some number of surviving recruits $(R_t)$ according to a general Ricker model (Figure 1), such that
+The IPM for Pacific salmon that I describe here shares several features with those of Su and Peterman [-@su2012], Fleischman et al. [-@fleischman2013], and Winship et al. [-@winship2014]. I begin with the process model that describes the true, but unknown production of offspring from their parents. In any given year _t_, spawning adults $(S_t)$ produce some number of surviving recruits $(R_t)$ according to a general Ricker model (Figure 1), such that
 	
 \begin{equation}
 R_t = \frac{\alpha S_t}{\mathrm{e}^{\beta S_t}},
@@ -346,7 +346,7 @@ cnt <- cnt + 1
 
 ## Process errors
 
-The process errors (Figure 6a) showed very little autocorrelation in recruitment after accounting for the effects of spawners and flow on productivity (Figure 6b).
+The process errors showed very little autocorrelation from year to year (Figure 6), indicating that interannual autocorrelation in both flows and spawners was sufficient to explain autocorrelation in recruitment.
 
 ```{r, echo=FALSE}
 cnt <- cnt + 1
@@ -373,14 +373,15 @@ cnt <- cnt + 1
 \vspace{0.25in}
 
 
-
-
-
-
-
 # Discussion
 
+The reconstruction of true spawner counts from the data demonstrates a clear downward trend since the turn of the century, which is rather disconcerting given the rather low intrinsic productivity of this stock. From 2005 onward, spawner numbers have varied around the estimated carrying capacity of about 9000 adults. However, this analysis was focused solely on the effects of flow on productivity, and cannot speak to possible causes of the relatively low capacity. Nevertheless, in addition to obvious losses of habitat, possible competition from hathery-origin fish may be decreasing capacity for wild fish [@buhle 2009; @chilcote2011; @odfw2011].  
+
+The negative effect of high flows during the spring when age-2 smolts are outmigrating is somewhat puzzling, as one would generally expect that higher flows would be beneficial. Perhaps particularly high flows in spring may push smolts downstream and into the estuary before they have adequate time to undergo the necessary physiological changes necessary for life at sea. In addition, the increased precipitation and runoff that leads to high flows may increase the transport of contaminants from terrestrial to aquatic environments, which known have negative effects on juvenile salmon in this region [@lundin2019].
+
 Flow covariates were highly correlated so results should be equivocal.
+
+The IPM I developed here differs in several ways from other life-cycle models created for Chinook salmon in the Willamette River basin.
 
 
 \vspace{0.15in}
@@ -391,7 +392,7 @@ Flow covariates were highly correlated so results should be equivocal.
 
 \normalsize
 
-I thank Eric Buhle (BioMark, Inc) for helpful discussions about model development. I also thank Tyrell DeWeber and Jim Peterson (USGS Oregon Cooperative Fish and Wildlife Research Unit), Rich Piaskowski (USACE), and the other members of the Science of Willamette Instream Flows Team (SWIFT) for constructive comments on our analyses. Tom Friesen, Mark Lewis and others at ODFW were invaluable in assembling the data.
+I thank Eric Buhle (BioMark, Inc) for helpful discussions about model development. I also thank Tyrell DeWeber and Jim Peterson (USGS Oregon Cooperative Fish and Wildlife Research Unit), Rich Piaskowski (USACE), and the other members of the Science of Willamette Instream Flows Team (SWIFT) for constructive comments on the analyses. Tom Friesen, Mark Lewis and others at ODFW were invaluable in assembling the data.
 
 \vspace{0.25in}
 
