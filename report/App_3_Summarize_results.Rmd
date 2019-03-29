@@ -59,7 +59,7 @@ if(!require("captioner")) {
   library("captioner")
 }
 ## set default caption options
-fig_cap <- captioner(prefix = "Figure S", suffix = ". ", auto_space = FALSE,
+fig_cap <- captioner(prefix = "Figure A3-", suffix = ". ", auto_space = FALSE,
                      style = "b", style_prefix = TRUE)
 ```
 
