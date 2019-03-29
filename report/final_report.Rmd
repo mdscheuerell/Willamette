@@ -375,16 +375,16 @@ cnt <- cnt + 1
 
 # Discussion
 
-The reconstruction of true spawner counts from the data demonstrates a clear downward trend since the turn of the century, which is rather disconcerting given the rather low intrinsic productivity of this stock. From 2005 onward, spawner numbers have varied around the estimated carrying capacity of about 9000 adults. However, this analysis was focused solely on the effects of flow on productivity, and cannot speak to possible causes of the relatively low capacity. Nevertheless, in addition to obvious losses of habitat, possible competition from hathery-origin fish may be decreasing capacity for wild fish [@buhle 2009; @chilcote2011; @odfw2011].  
+The reconstruction of true spawner counts from the data demonstrates a clear downward trend since the turn of the century, which is rather disconcerting given the rather low intrinsic productivity of this stock. From 2005 onward, spawner numbers have varied around the estimated carrying capacity of about 9000 adults. However, this analysis was focused solely on the effects of flow on productivity, and cannot speak to possible causes of the relatively low capacity. Nevertheless, in addition to obvious losses of habitat, possible competition from hathery-origin fish may be decreasing capacity for wild fish [@buhle2009; @chilcote2011; @odfw2011].  
 
 The negative effect of high flows during the spring when age-2 smolts are outmigrating is somewhat puzzling, as one would generally expect that higher flows would be beneficial. Perhaps particularly high flows in spring may push smolts downstream and into the estuary before they have adequate time to undergo the necessary physiological changes necessary for life at sea. In addition, the increased precipitation and runoff that leads to high flows may increase the transport of contaminants from terrestrial to aquatic environments, which known have negative effects on juvenile salmon in this region [@lundin2019].
 
-Flow covariates were highly correlated so results should be equivocal.
+The IPM I developed here differs in several ways from other life-cycle models created for Chinook salmon in the Willamette River basin. To date, those efforts have focused on developing highly detailed descriptions of the life-cycle and then filling in the necessary information. In contrast, this IPM was based solely upon the available data, and thus focuses on adult-to-adult transitions without any intermediary life stages. Although that lack of detail may be disappointing to some, it does present _i_) an open and direct treatment of the data, and _ii_) a full accounting of the uncertainty in the input data and estimated parameters and states. One of the advantages of the IPM is that it treats possible covariates just any other source of information. That is, any effect of flow is estimated directly within the same model framework that governs population dynamics rather than being prescribed _a priori_
 
-The IPM I developed here differs in several ways from other life-cycle models created for Chinook salmon in the Willamette River basin.
+The results of the various flow metrics were largely equivocal, and the ability to discriminate among the predictive accuracy of the varying model forms was influenced by three things. First, high correlation among the flow covariates necessarily means we should expect similar outcomes. Second, the relatively short duration of the time series does not provide for as much contrast in both fish abundance and flow regimes to tease apart any important effects. Third, uncertainty within the age composition data across years and ages can create regions of statistically low-likelihood (_i.e_, the model predicts a proportion of relatively rare age-3 or age-6 fish that is inconsistent with the observations). The importance of data weighting and its influence on model outputs has been widely addressed in marine stock assessments [@maunder2013], but is relatively uncommon in the evaluation of salmon models [@buhle2018], and should therefore be considered explicitly in the future.
 
 
-\vspace{0.15in}
+\newpage
 
 \Large\textbf{Acknowledgments}
 
